@@ -1,4 +1,4 @@
-package com.livemap
+package com.example.livemap
 
 import org.junit.Test
 

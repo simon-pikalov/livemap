@@ -1,4 +1,4 @@
-package arange.objects;
+package objects;
 
 public class User {
 

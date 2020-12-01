@@ -1,4 +1,4 @@
-package arange.objects;
+package objects;
 
 import java.util.HashMap;
 

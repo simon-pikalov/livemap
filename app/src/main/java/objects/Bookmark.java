@@ -1,18 +1,18 @@
-package arange.objects;
+package objects;
 
-public class Bookmark {
+
+import com.google.android.gms.maps.model.LatLng;
+
+public class Bookmark  {
     private String name;
-    private double lat;
-    private double lng;
     private boolean isPublic;
     private int id;
     private static int lastFreeId;
-
+    private LatLng cord;
 
     public Bookmark(String name, double lat, double lng, boolean isPublic) {
+        cord = new LatLng(lat,lng);
         this.name = name;
-        this.lat = lat;
-        this.lng = lng;
         this.isPublic = isPublic;
         this.id = lastFreeId;
         lastFreeId++;
@@ -27,20 +27,12 @@ public class Bookmark {
         this.name = name;
     }
 
-    public double getLat() {
-        return lat;
+    public LatLng getCord() {
+        return cord;
     }
 
-    public void setLat(double lat) {
-        this.lat = lat;
-    }
-
-    public double getLng() {
-        return lng;
-    }
-
-    public void setLng(double lng) {
-        this.lng = lng;
+    public void setCord(LatLng cord) {
+        this.cord = cord;
     }
 
     public boolean isPublic() {
