@@ -35,7 +35,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
      */
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
-
         val latCity = 32.1046
         val lngCity = 35.1745
         val bookmarkCity =  Bookmark("Ariel-City",latCity,lngCity,true)
@@ -43,10 +42,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         val latAriel = 32.1046
         val lngAriel= 35.1745
         val bookmarkAriel =  Bookmark("Ariel-City",latAriel,lngAriel,true)
-
+        mMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE)
         mMap.addMarker(MarkerOptions().position(bookmarkAriel.cord).title(bookmarkAriel.name))
         mMap.addMarker(MarkerOptions().position(bookmarkAriel.cord).title(bookmarkAriel.name))
         mMap.moveCamera(CameraUpdateFactory.newLatLng(bookmarkCity.cord))
         mMap.moveCamera(CameraUpdateFactory.newLatLng(bookmarkAriel.cord))
+
     }
 }
