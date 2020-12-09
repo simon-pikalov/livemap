@@ -18,4 +18,12 @@
         android:name="com.example.livemap.social.OptionsFragment"
         android:label="options_fragment"
         tools:layout="@layout/options_fragment" />
+    <fragment
+        android:id="@+id/signInFragment"
+        android:name="com.example.livemap.SignInFragment"
+        android:label="SignInFragment" >
+        <action
+            android:id="@+id/action_signInFragment_to_mapFragment"
+            app:destination="@id/mapFragment" />
+    </fragment>
 </navigation>

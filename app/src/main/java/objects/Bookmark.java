@@ -10,6 +10,7 @@ public class Bookmark  {
     private static int lastFreeId;
     private LatLng cord;
 
+    public Bookmark(){}
     public Bookmark(String name, double lat, double lng, boolean isPublic) {
         cord = new LatLng(lat,lng);
         this.name = name;
