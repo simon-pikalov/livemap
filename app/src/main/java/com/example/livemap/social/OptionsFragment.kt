@@ -8,24 +8,24 @@ import android.view.View
 import android.view.ViewGroup
 import com.example.livemap.R
 
-class ActionFragment : Fragment() {
+class OptionsFragment : Fragment() {
 
     companion object {
-        fun newInstance() = ActionFragment()
+        fun newInstance() = OptionsFragment()
     }
 
-    private lateinit var viewModel: ActionViewModel
+    private lateinit var viewModel: OptionsViewModel
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return inflater.inflate(R.layout.action_fragment, container, false)
+        return inflater.inflate(R.layout.options_fragment, container, false)
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        viewModel = ViewModelProvider(this).get(ActionViewModel::class.java)
+        viewModel = ViewModelProvider(this).get(OptionsViewModel::class.java)
         // TODO: Use the ViewModel
     }
 
