@@ -6,6 +6,9 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import android.widget.EditText
+import com.example.livemap.MainActivity
 import com.example.livemap.R
 
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -14,9 +17,21 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.firebase.auth.PhoneAuthProvider
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.ktx.initialize
 import objects.Bookmark
+import java.util.concurrent.TimeUnit
 
 class MapFragment : Fragment() {
+
+    //auth variables
+    private lateinit var mPhoneNumber: EditText
+    private lateinit var mCode: EditText
+    private lateinit var mSend: Button
+    private  lateinit var mCallBacks:PhoneAuthProvider.OnVerificationStateChangedCallbacks
+
+
 
     private val callback = OnMapReadyCallback { googleMap ->
         /**
@@ -47,12 +62,27 @@ class MapFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        //init the buttons
+        mSend = view?.findViewById(R.id.sendVerificationButton)!!
+        mCode = view?.findViewById(R.id.code)!!
+        mPhoneNumber = view?.findViewById(R.id.phoneNumber)!!
+        //init the buttons  end
+        
+        mSend.setOnClickListener {view -> startPhoneNumberVerification() }
+        
+
+        
         return inflater.inflate(R.layout.fragment_map, container, false)
+    }
+
+    private fun startPhoneNumberVerification() {
+        //PhoneAuthProvider.getInstance().verifyPhoneNumber(mPhoneNumber.text.toString(),60,TimeUnit.SECONDS,,mCallBacks)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
         mapFragment?.getMapAsync(callback)
+
     }
 }

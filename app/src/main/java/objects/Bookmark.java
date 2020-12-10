@@ -43,7 +43,6 @@ public class Bookmark  {
         isPublic = aPublic;
     }
 
-
     public int getId() {
         return id;
     }
