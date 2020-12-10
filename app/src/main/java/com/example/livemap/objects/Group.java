@@ -1,4 +1,4 @@
-package objects;
+package com.example.livemap.objects;
 
 import java.util.HashMap;
 

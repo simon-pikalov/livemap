@@ -1,4 +1,4 @@
-package objects;
+package com.example.livemap.objects;
 
 public class User {
 

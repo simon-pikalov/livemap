@@ -1,4 +1,4 @@
-package objects;
+package com.example.livemap.objects;
 
 
 import com.google.android.gms.maps.model.LatLng;
@@ -10,6 +10,7 @@ public class Bookmark  {
     private static int lastFreeId;
     private LatLng cord;
 
+    public Bookmark(){}
     public Bookmark(String name, double lat, double lng, boolean isPublic) {
         cord = new LatLng(lat,lng);
         this.name = name;
@@ -47,4 +48,13 @@ public class Bookmark  {
         return id;
     }
 
+    @Override
+    public String toString() {
+        return "Bookmark{" +
+                "name='" + name + '\'' +
+                ", isPublic=" + isPublic +
+                ", id=" + id +
+                ", cord=" + cord +
+                '}';
+    }
 }

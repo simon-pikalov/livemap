@@ -1,4 +1,6 @@
-package utils;
+package com.example.livemap.utils;
+
+import com.google.gson.Gson;
 
 public class GpsUtils {
 
@@ -11,6 +13,7 @@ public class GpsUtils {
      * @return
      */
     public static double convertToMeters(double lat1, double lon1, double lat2,double lon2){  // generally used geo measurement function
+
 
         if(lat2==Double.MAX_VALUE) return -1;
 
