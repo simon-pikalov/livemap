@@ -62,7 +62,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-
+        mMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
 //        FirebaseApp.initializeApp(this);
 //        FirebaseDatabase fireDatabase  = FirebaseDatabase.getInstance();
 

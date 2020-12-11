@@ -17,10 +17,6 @@
         android:theme="@style/Theme.Livemap">
 
         <activity android:name=".MapsActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
         </activity>
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.
@@ -37,6 +33,10 @@
         <activity
             android:name=".SignInActivity"
             android:label="SignIn">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
         </activity>
     </application>
 

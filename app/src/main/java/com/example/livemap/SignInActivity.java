@@ -27,6 +27,7 @@ public class SignInActivity extends AppCompatActivity {
     private EditText mCode;
     private Button mSend;
     private PhoneAuthProvider.OnVerificationStateChangedCallbacks mCallbacks;
+    private String mVerificationId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,30 +42,50 @@ public class SignInActivity extends AppCompatActivity {
         mSend.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startPhoneNumberVerification();
+                if (mVerificationId != null) { // case User has already send an sms  and pushed the button with code -> verify him
+                    verifyPhoneNumberWithCode();
+                }
+                else{
+                    startPhoneNumberVerification(); //  // case User has not already send an sms -> send it
+                }
+
             }
         });
 
         mCallbacks = new PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
             @Override
             public void onVerificationCompleted(@NonNull PhoneAuthCredential phoneAuthCredential) {
-            signInWithPhoneAuthCredential(phoneAuthCredential);
+                signInWithPhoneAuthCredential(phoneAuthCredential);
             }
 
             @Override
             public void onVerificationFailed(@NonNull FirebaseException e) {
-                Log.i("firebase-error","Phone Verification Failed !");
+                Log.i("firebase-error", "Phone Verification Failed !");
+            }
+
+            @Override
+            public void onCodeSent(@NonNull String verification, @NonNull PhoneAuthProvider.ForceResendingToken forceResendingToken) {
+                super.onCodeSent(verification, forceResendingToken);
+                mVerificationId = verification;
+                mSend.setText("Verify Code");
+
             }
         };
 
     }
 
+    private void verifyPhoneNumberWithCode() {
+
+        PhoneAuthCredential credential = PhoneAuthProvider.getCredential(mVerificationId, mCode.getText().toString());
+        signInWithPhoneAuthCredential(credential);
+    }
+
     private void signInWithPhoneAuthCredential(PhoneAuthCredential phoneAuthCredential) {
-        Log.i("firebase","Phone Verification started");
+        Log.i("firebase", "Phone Verification started");
         FirebaseAuth.getInstance().signInWithCredential(phoneAuthCredential).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
-                if(task.isSuccessful()){
+                if (task.isSuccessful()) {
                     userIsLoggedIn();
                 }
             }
@@ -73,8 +94,8 @@ public class SignInActivity extends AppCompatActivity {
 
     private void userIsLoggedIn() {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        if(user!=null){
-            startActivity(new Intent(getApplicationContext(),MapsActivity.class));
+        if (user != null) {
+            startActivity(new Intent(getApplicationContext(), MapsActivity.class));
             finish();
             return;
         }
