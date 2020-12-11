@@ -18,7 +18,8 @@ import com.example.livemap.objects.*;
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
-
+    //TODO @semyon check if user authenticated, if not navigate to sign in, see example
+    // in Friendly Chat app
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
