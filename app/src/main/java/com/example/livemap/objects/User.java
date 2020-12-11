@@ -5,6 +5,7 @@ public class User {
     String userName;
     boolean isAdmin;
 
+
     public User(String userName) {
         this.isAdmin = false;
         this.userName = userName;
