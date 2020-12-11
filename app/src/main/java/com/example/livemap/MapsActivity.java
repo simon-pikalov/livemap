@@ -128,7 +128,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 String description = String.format(Locale.getDefault(),
                         "Lat: %1$.5f, Long: %2$.5f",
                         latLng.latitude,
-                        latLng.longitude) + "\n Vasia Was here"+Integer.valueOf(ml.getCount());
+                        latLng.longitude) + "\n Vasia Was here";
                 // create custom marker
                 Marker marker = map.addMarker(new MarkerOptions()
                         .position(latLng)
@@ -139,7 +139,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 marker.setTag("custom");
                  ml = new MarkerLive(sUid,marker,true);
 
-                mRef = rootNode.getReference("/root/markers/"+ml.getCount());
+                mRef = rootNode.getReference("/root/markers/"+ml.getMarker().hashCode());
                 mRef.setValue(ml);
             }
         });
@@ -193,6 +193,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         if (marker.getTag() == "custom") {
                             Toast.makeText(getApplicationContext(),"Info window clicked!",
                                     Toast.LENGTH_LONG).show();
+
                         }
                     }
                 });

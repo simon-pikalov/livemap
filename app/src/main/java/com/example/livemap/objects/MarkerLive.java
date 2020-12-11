@@ -10,7 +10,7 @@ public class MarkerLive  {
     private boolean isPublic;
     private String ownerHash;
     private Marker marker;
-    static int count = 0 ;
+
 
     public MarkerLive(){}
 
@@ -18,7 +18,7 @@ public class MarkerLive  {
         this.isPublic = isPublic;
         this.marker = marker;
         this.ownerHash = ownerHash;
-        count++;
+
     }
 
 
@@ -48,9 +48,6 @@ public class MarkerLive  {
     }
 
 
-    public static int getCount() {
-        return count;
-    }
 
     @Override
     public String toString() {
