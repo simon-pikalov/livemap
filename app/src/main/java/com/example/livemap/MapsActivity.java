@@ -42,7 +42,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private static final int REQUEST_LOCATION_PERMISSION = 1;
 
     private GoogleMap mMap;
-
+    private MacActions currAction;
     FirebaseDatabase rootNode;
     DatabaseReference mRef;
     String sUid;
@@ -59,7 +59,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         getSupportFragmentManager().beginTransaction()
                 .add(R.id.fragment_container, mapFragment).commit();
         mapFragment.getMapAsync(this);
-
+        currAction = MacActions.ADD;
         sUid =  FirebaseAuth.getInstance().getCurrentUser().getUid(); // the user hash of the current user
 
         mRef = rootNode.getReference("/root/markers/");
@@ -124,23 +124,28 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
             @Override
             public void onMapLongClick(LatLng latLng) {
-                MarkerLive ml  = new MarkerLive();
-                String description = String.format(Locale.getDefault(),
-                        "Lat: %1$.5f, Long: %2$.5f",
-                        latLng.latitude,
-                        latLng.longitude) + "\n Vasia Was here";
-                // create custom marker
-                Marker marker = map.addMarker(new MarkerOptions()
-                        .position(latLng)
-                        .title("Placeholder title :)")
-                        .snippet(description)
-                        .icon(BitmapDescriptorFactory.defaultMarker //changes color
-                                (BitmapDescriptorFactory.HUE_GREEN)));
-                marker.setTag("custom");
-                 ml = new MarkerLive(sUid,marker,true);
 
-                mRef = rootNode.getReference("/root/markers/"+ml.getMarker().hashCode());
-                mRef.setValue(ml);
+                if (currAction==MacActions.ADD){
+                    MarkerLive ml  = new MarkerLive();
+                    String description = String.format(Locale.getDefault(),
+                            "Lat: %1$.5f, Long: %2$.5f",
+                            latLng.latitude,
+                            latLng.longitude) + "\n Vasia Was here";
+                    // create custom marker
+                    Marker marker = map.addMarker(new MarkerOptions()
+                            .position(latLng)
+                            .title("Placeholder title :)")
+                            .snippet(description)
+                            .icon(BitmapDescriptorFactory.defaultMarker //changes color
+                                    (BitmapDescriptorFactory.HUE_GREEN)));
+                    marker.setTag("custom");
+                    ml = new MarkerLive(sUid,marker,true);
+
+                    mRef = rootNode.getReference("/root/markers/"+ml.getMarker().hashCode());
+                    mRef.setValue(ml);
+                }
+
+
             }
         });
         // this is the same as setOnMapLongClickListener, except there is poi info
