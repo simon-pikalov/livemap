@@ -32,13 +32,14 @@ public class MapDataSetDeserializer implements JsonDeserializer<MapDataSet> {
             MarkerLiveDeserializer markerLiveDeserializer = new MarkerLiveDeserializer();
             gsonBuilder.registerTypeAdapter(MarkerLive.class, markerLiveDeserializer);
             Gson gson = gsonBuilder.create();
-            MarkerLive tempMarker;
             String key;
             for (Entry<String, JsonElement> set : jsonObject.entrySet()) {
                 key = set.getKey();
                 JsonElement jsonValueElement = set.getValue(); //the value of the hashmap as json element
-                tempMarker = gson.fromJson(jsonValueElement, MarkerLive.class);
+                MarkerLive tempMarker = gson.fromJson(jsonValueElement, MarkerLive.class);
                 dMap.put(key,tempMarker);
+                Log.w("Firebase", "tempMarker in MapDataSetDeserializer is: " + tempMarker);
+                Log.w("Firebase", "dMap is: " + dMap);
             }
         }
         catch (Exception e ){

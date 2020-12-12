@@ -92,7 +92,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                 .title("Placeholder title :)")
                                 .snippet(m.getMarkerOptions().getSnippet())
                                 .icon(BitmapDescriptorFactory.defaultMarker //changes color
-                                        (BitmapDescriptorFactory.HUE_RED));
+                                        (BitmapDescriptorFactory.HUE_GREEN+20));
                         mMap.addMarker(markerOptions);
                 }
 

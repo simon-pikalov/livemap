@@ -23,7 +23,6 @@ public class MarkerLive  {
         this.markerOptions = marker;
         this.ownerHash = ownerHash;
         this.markerHash = String.valueOf(marker.hashCode());
-
     }
 
 
@@ -59,9 +58,10 @@ public class MarkerLive  {
     @Override
     public String toString() {
         return "MarkerLive{" +
-                ", isPublic=" + isPublic +
+                "isPublic=" + isPublic +
                 ", ownerHash='" + ownerHash + '\'' +
-                ", marker=" + markerOptions +
+                ", markerHash='" + markerHash + '\'' +
+                ", markerOptions=" + markerOptions.getPosition() +
                 '}';
     }
 }

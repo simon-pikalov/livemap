@@ -27,13 +27,14 @@ public class MarkerLiveDeserializer implements JsonDeserializer<MarkerLive> {
 
         try {
             JsonObject jsonObject = json.getAsJsonObject();
+            Log.w("Firebase", "MarkerLiveDeserializer jsonObject is: " + jsonObject);
             Log.w("Firebase", "MarkerLiveDeserializer is: " + jsonObject);
             isPublic = jsonObject.get("public").getAsBoolean(); //parse is public
             ownerHash = jsonObject.get("ownerHash").getAsString(); //parse is public
-            JsonObject jMarker = jsonObject.get("marker").getAsJsonObject(); //parse the google marker
+            JsonObject jMarker = jsonObject.get("markerOptions").getAsJsonObject(); //parse the google marker
             Gson gson = new Gson();
             marker = gson.fromJson(jMarker,MarkerOptions.class);
-
+            Log.w("Firebase", "Finish des marker is: " + marker);
         }
         catch (Exception e ){
             Log.w("Exception",e.getMessage());
