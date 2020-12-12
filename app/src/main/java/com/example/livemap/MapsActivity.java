@@ -4,6 +4,8 @@ import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
@@ -39,9 +41,10 @@ import org.json.JSONObject;
 import java.util.HashMap;
 import java.util.Locale;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
+public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
+        ,CustomizeMarkerFragment.OnFragmentInteractionListener {
     private static final int REQUEST_LOCATION_PERMISSION = 1;
-
+    private static final String DEFAULT_TITLE = "Unnamed Marker";
     private GoogleMap mMap;
     private MacActions currAction;
     private Switch mSwitchLocation; //to show or hide curr location
@@ -50,13 +53,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     String sUid;
     MapCollection mapCollection;
 
+    private boolean isCustomizeFragmentDisplayed = false;
+
+    private String titleFromLastCustomizeFragment;
+    private String descriptionFromLastCustomizeFragment;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
         rootNode = FirebaseDatabase.getInstance();
         setContentView(R.layout.activity_maps);
-        // Create ne runtime instance of map fragment
+        // Create new runtime instance of map fragment
         SupportMapFragment mapFragment = SupportMapFragment.newInstance();
         // add map fragment to frame layout
         getSupportFragmentManager().beginTransaction()
@@ -82,21 +91,21 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 MapDataSetDeserializer mapDataSetDeserializer = new MapDataSetDeserializer();
                 gsonBuilder.registerTypeAdapter(MapDataSet.class, mapDataSetDeserializer);
                 Gson gson = gsonBuilder.create();
-                MapDataSet markers  = gson.fromJson(jsonString, MapDataSet.class);
+                MapDataSet markers = gson.fromJson(jsonString, MapDataSet.class);
                 Log.w("Firebase", "markers is: " + markers);
-                if(markers != null&&markers.getLocations()!=null&&markers.getLocations().values()!=null){
-                    for(MarkerLive m :markers.getLocations().values()){
-                        if(m.getMarkerOptions().getPosition()==null) continue;
+                if (markers != null && markers.getLocations() != null && markers.getLocations().values() != null) {
+                    for (MarkerLive m : markers.getLocations().values()) {
+                        if (m.getMarkerOptions().getPosition() == null) continue;
                         MarkerOptions markerOptions = new MarkerOptions()
                                 .position(m.getMarkerOptions().getPosition())
                                 .title("Placeholder title :)")
                                 .snippet(m.getMarkerOptions().getSnippet())
                                 .icon(BitmapDescriptorFactory.defaultMarker //changes color
-                                        (BitmapDescriptorFactory.HUE_GREEN+20));
+                                        (BitmapDescriptorFactory.HUE_GREEN + 20));
                         mMap.addMarker(markerOptions);
-                }
+                    }
 
-               }
+                }
 
             }
 
@@ -122,7 +131,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
 
-    void addMarkersFromFireBase(){
+    void addMarkersFromFireBase() {
 
     }
 
@@ -140,60 +149,32 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap = googleMap;
         mMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
 
+//        //Add ground overlay example
+//        GroundOverlayOptions homeOverlay = new GroundOverlayOptions()
+//                .image(BitmapDescriptorFactory.fromResource(R.drawable.android))
+//                .position(arielCord, 100);
+//        mMap.addGroundOverlay(homeOverlay);
 
-        double latAriel = 32.1046;
-        double lngAriel = 35.1745;
+        //set click functions
+        setMapClicks(mMap);
 
-
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(latAriel, lngAriel)));
-        LatLng arielCord = new LatLng(latAriel, lngAriel);
-
-        //Add ground overlay example
-        GroundOverlayOptions homeOverlay = new GroundOverlayOptions()
-                .image(BitmapDescriptorFactory.fromResource(R.drawable.android))
-                .position(arielCord, 100);
-        mMap.addGroundOverlay(homeOverlay);
-
-        //for long click function to work (and poi)
-        setMapLongClick(mMap);
-        //setPoiClick(mMap);
-        // enable current location
         enableMyLocation();
-        setInfoWindowClickToEditBookmark(mMap);
 
     }
 
-    // handles the creation of markers
-    private void setMapLongClick(final GoogleMap map) {
+
+    // called when long clicking on map
+    private void setMapClicks(final GoogleMap map) {
         map.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
 
             @Override
             public void onMapLongClick(LatLng latLng) {
-
                 if (currAction == MacActions.ADD) {
-                    MarkerLive ml = new MarkerLive();
-                    String description = String.format(Locale.getDefault(),
-                            "Lat: %1$.5f, Long: %2$.5f",
-                            latLng.latitude,
-                            latLng.longitude) + "\n Vasia Was here";
-                    // create custom marker
-
-                    MarkerOptions markerOptions = new MarkerOptions()
-                            .position(latLng)
-                            .title("Placeholder title :)")
-                            .snippet(description);
-
-                    ml = new MarkerLive(sUid, markerOptions, true);
-                    mRef = rootNode.getReference("/root/markers/" + ml.getMarkerOptions().hashCode());
-                    mRef.setValue(ml);
-                    markerOptions.icon(BitmapDescriptorFactory.defaultMarker //changes color
-                            (BitmapDescriptorFactory.HUE_GREEN));
-                    map.addMarker(markerOptions);
+                    addNewMarker(latLng);
                 }
-
-
             }
         });
+
         // this is the same as setOnMapLongClickListener, except there is poi info
         map.setOnPoiClickListener(new GoogleMap.OnPoiClickListener() {
             @Override
@@ -205,7 +186,53 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 poiMarker.showInfoWindow();
             }
         });
+        map.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+
+            @Override
+            public boolean onMarkerClick(final Marker marker) {
+                Toast.makeText(getApplicationContext(),
+                        marker.getTitle() +
+                                " has been clicked",
+                        Toast.LENGTH_SHORT).show();
+
+                // Return false to indicate that we have not consumed the event and that we wish
+                // for the default behavior to occur (which is for the camera to move such that the
+                // marker is centered and for the marker's info window to open, if it has one).
+                return false;
+            }
+        });
+        map.setOnInfoWindowClickListener(
+                new GoogleMap.OnInfoWindowClickListener() {
+                    @Override
+                    public void onInfoWindowClick(Marker marker) {
+                        openMarkerCustomizationPopup(marker);
+
+
+                    }
+                });
     }
+    /** Called when the user clicks a marker. */
+
+
+    private void addNewMarker(LatLng latLng){
+        // create new "default" marker and send it for customization
+        MarkerOptions markerOptions = new MarkerOptions()
+                .position(latLng)
+                .title(DEFAULT_TITLE);
+        Marker marker = mMap.addMarker(markerOptions);
+        marker.setTag(0);
+        openMarkerCustomizationPopup(marker);
+
+
+        MarkerLive ml = new MarkerLive();
+        ml = new MarkerLive(sUid, markerOptions, true);
+        mRef = rootNode.getReference("/root/markers/" + ml.getMarkerOptions().hashCode());
+        mRef.setValue(ml);
+        markerOptions.icon(BitmapDescriptorFactory.defaultMarker //changes color
+                (BitmapDescriptorFactory.HUE_GREEN));
+
+    }
+
 
     // checks if there is location access, if so enables location, otherwise asks
     private void enableMyLocation() {
@@ -251,18 +278,43 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
 
-    // listens to clicks on the info window, when clicked opens edit fragment
-    private void setInfoWindowClickToEditBookmark(GoogleMap map) {
-        map.setOnInfoWindowClickListener(
-                new GoogleMap.OnInfoWindowClickListener() {
-                    @Override
-                    public void onInfoWindowClick(Marker marker) {
-                        if (marker.getTag() == "custom") {
-                            Toast.makeText(getApplicationContext(), "Info window clicked!",
-                                    Toast.LENGTH_LONG).show();
 
-                        }
-                    }
-                });
+    private void openMarkerCustomizationPopup(Marker marker) {
+        isCustomizeFragmentDisplayed = true;
+        // Instantiate the fragment.
+        CustomizeMarkerFragment customizeMarkerFragment =
+                CustomizeMarkerFragment.newInstance(marker);
+        // Get the FragmentManager and start a transaction.
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager
+                .beginTransaction();
+
+        // Add the customizeMarkerFragment.
+        fragmentTransaction.add(R.id.fragment_container,
+                customizeMarkerFragment).addToBackStack(null).commit();
     }
+
+    public void closeMarkerCustomizationPopup() {
+        isCustomizeFragmentDisplayed = false;
+        // Get the FragmentManager.
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        // Check to see if the fragment is already showing.
+        CustomizeMarkerFragment CustomizeMarkerFragment = (CustomizeMarkerFragment) fragmentManager
+                .findFragmentById(R.id.fragment_container);
+        if (CustomizeMarkerFragment != null) {
+            // Create and commit the transaction to remove the fragment.
+            FragmentTransaction fragmentTransaction =
+                    fragmentManager.beginTransaction();
+            fragmentTransaction.remove(CustomizeMarkerFragment).commit();
+        }
+    }
+
+
+    @Override
+    public void customizeMarkerComplete() {
+        closeMarkerCustomizationPopup();
+    }
+
 }
+
+
