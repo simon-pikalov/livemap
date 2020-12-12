@@ -84,15 +84,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 Gson gson = gsonBuilder.create();
                 MapDataSet markers  = gson.fromJson(jsonString, MapDataSet.class);
                 Log.w("Firebase", "markers is: " + markers);
-                for(MarkerLive m :markers.getLocations().values()){
-                    MarkerOptions markerOptions = new MarkerOptions()
-                            .position(m.getMarkerOptions().getPosition())
-                            .title("Placeholder title :)")
-                            .snippet(m.getMarkerOptions().getSnippet())
-                            .icon(BitmapDescriptorFactory.defaultMarker //changes color
-                                    (BitmapDescriptorFactory.HUE_GREEN));
-                    mMap.addMarker(markerOptions);
+                if(markers != null&&markers.getLocations()!=null&&markers.getLocations().values()!=null){
+                    for(MarkerLive m :markers.getLocations().values()){
+                        if(m.getMarkerOptions().getPosition()==null) continue;
+                        MarkerOptions markerOptions = new MarkerOptions()
+                                .position(m.getMarkerOptions().getPosition())
+                                .title("Placeholder title :)")
+                                .snippet(m.getMarkerOptions().getSnippet())
+                                .icon(BitmapDescriptorFactory.defaultMarker //changes color
+                                        (BitmapDescriptorFactory.HUE_RED));
+                        mMap.addMarker(markerOptions);
                 }
+
+               }
 
             }
 
@@ -114,6 +118,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 }
             }
         });
+
+    }
+
+
+    void addMarkersFromFireBase(){
 
     }
 
@@ -172,14 +181,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     MarkerOptions markerOptions = new MarkerOptions()
                             .position(latLng)
                             .title("Placeholder title :)")
-                            .snippet(description)
-                            .icon(BitmapDescriptorFactory.defaultMarker //changes color
-                                    (BitmapDescriptorFactory.HUE_GREEN));
-                    Marker marker = map.addMarker(markerOptions);
-                    ml = new MarkerLive(sUid, markerOptions, true);
+                            .snippet(description);
 
+                    ml = new MarkerLive(sUid, markerOptions, true);
                     mRef = rootNode.getReference("/root/markers/" + ml.getMarkerOptions().hashCode());
                     mRef.setValue(ml);
+                    markerOptions.icon(BitmapDescriptorFactory.defaultMarker //changes color
+                            (BitmapDescriptorFactory.HUE_GREEN));
+                    map.addMarker(markerOptions);
                 }
 
 

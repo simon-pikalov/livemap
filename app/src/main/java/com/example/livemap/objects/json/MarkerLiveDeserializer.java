@@ -20,13 +20,24 @@ import java.lang.reflect.Type;
 public class MarkerLiveDeserializer implements JsonDeserializer<MarkerLive> {
     @Override
     public MarkerLive deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
-        JsonObject jsonObject = json.getAsJsonObject();
-        Log.w("Firebase", "MarkerLiveDeserializer is: " + jsonObject);
-        boolean isPublic = jsonObject.get("public").getAsBoolean(); //parse is public
-        String ownerHash = jsonObject.get("ownerHash").getAsString(); //parse is public
-        JsonObject jMarker = jsonObject.get("marker").getAsJsonObject(); //parse the google marker
-        Gson gson = new Gson();
-        MarkerOptions marker = gson.fromJson(jMarker,MarkerOptions.class);
+
+        boolean isPublic = false;
+        String ownerHash = "";
+        MarkerOptions marker = new MarkerOptions();
+
+        try {
+            JsonObject jsonObject = json.getAsJsonObject();
+            Log.w("Firebase", "MarkerLiveDeserializer is: " + jsonObject);
+            isPublic = jsonObject.get("public").getAsBoolean(); //parse is public
+            ownerHash = jsonObject.get("ownerHash").getAsString(); //parse is public
+            JsonObject jMarker = jsonObject.get("marker").getAsJsonObject(); //parse the google marker
+            Gson gson = new Gson();
+            marker = gson.fromJson(jMarker,MarkerOptions.class);
+
+        }
+        catch (Exception e ){
+            Log.w("Exception",e.getMessage());
+        }
         return new MarkerLive(ownerHash,marker,isPublic);
     }
 }
