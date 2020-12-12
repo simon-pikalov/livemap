@@ -2,27 +2,27 @@ package com.example.livemap.objects;
 
 public class User {
 
-    String userName;
+    String userHash;
     boolean isAdmin;
 
 
     public User(String userName) {
         this.isAdmin = false;
-        this.userName = userName;
+        this.userHash = userName;
     }
 
 
     public User(String userName, boolean isAdmin) {
-        this.userName = userName;
+        this.userHash = userName;
         this.isAdmin = isAdmin;
     }
 
-    public String getUserName() {
-        return userName;
+    public String getUserHash() {
+        return userHash;
     }
 
-    public void setUserName(String userName) {
-        this.userName = userName;
+    public void setUserHash(String userHash) {
+        this.userHash = userHash;
     }
 
     public boolean isAdmin() {

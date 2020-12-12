@@ -7,13 +7,18 @@ import androidx.fragment.app.FragmentActivity;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
+import android.nfc.Tag;
 import android.os.Bundle;
+import android.os.Looper;
 import android.util.Log;
 import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.Toast;
 
 import com.example.livemap.objects.json.MapDataSetDeserializer;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -34,6 +39,45 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+
+import android.content.DialogInterface;
+import android.content.pm.PackageManager;
+import android.location.Location;
+import android.os.Bundle;
+
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.FrameLayout;
+import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.CameraPosition;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+
+import com.google.android.libraries.places.api.Places;
+import com.google.android.libraries.places.api.model.Place;
+import com.google.android.libraries.places.api.model.PlaceLikelihood;
+import com.google.android.libraries.places.api.net.FindCurrentPlaceRequest;
+import com.google.android.libraries.places.api.net.FindCurrentPlaceResponse;
+import com.google.android.libraries.places.api.net.PlacesClient;
+
 import org.json.JSONObject;
 
 import java.util.HashMap;
@@ -45,10 +89,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private GoogleMap mMap;
     private MacActions currAction;
     private Switch mSwitchLocation; //to show or hide curr location
-    FirebaseDatabase rootNode;
-    DatabaseReference mRef;
-    String sUid;
-    MapCollection mapCollection;
+    private FirebaseDatabase rootNode;
+    private DatabaseReference mRef;
+    private String sUid;
+    private MapCollection mapCollection;
+    private FusedLocationProviderClient fusedLocationProviderClient;
+    private LocationRequest locationRequest;
+    private Marker userLocationMarker;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,36 +116,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mRef = rootNode.getReference("/root/markers/");
         mapCollection = new MapDataSet();
 
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+
+        //init the  locationRequest
+        locationRequest = LocationRequest.create();
+        locationRequest.setInterval(500); //mils interval
+        locationRequest.setFastestInterval(100); //mils interval
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+
         mRef.addValueEventListener(new ValueEventListener() {
 
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                Log.w("Firebase", "dataSnapshot is: " + dataSnapshot);
-
-                HashMap<String, JSONObject> dataSnapshotValue = (HashMap<String, JSONObject>) dataSnapshot.getValue();
-                Log.w("Firebase", "dataSnapshotValue is: " + dataSnapshotValue);
-                String jsonString = new Gson().toJson(dataSnapshotValue);
-                Log.w("Firebase", "jsonString is: " + jsonString);
-                GsonBuilder gsonBuilder = new GsonBuilder();
-                MapDataSetDeserializer mapDataSetDeserializer = new MapDataSetDeserializer();
-                gsonBuilder.registerTypeAdapter(MapDataSet.class, mapDataSetDeserializer);
-                Gson gson = gsonBuilder.create();
-                MapDataSet markers  = gson.fromJson(jsonString, MapDataSet.class);
-                Log.w("Firebase", "markers is: " + markers);
-                if(markers != null&&markers.getLocations()!=null&&markers.getLocations().values()!=null){
-                    for(MarkerLive m :markers.getLocations().values()){
-                        if(m.getMarkerOptions().getPosition()==null) continue;
-                        MarkerOptions markerOptions = new MarkerOptions()
-                                .position(m.getMarkerOptions().getPosition())
-                                .title("Placeholder title :)")
-                                .snippet(m.getMarkerOptions().getSnippet())
-                                .icon(BitmapDescriptorFactory.defaultMarker //changes color
-                                        (BitmapDescriptorFactory.HUE_GREEN+20));
-                        mMap.addMarker(markerOptions);
-                }
-
-               }
-
+                addMarkersFromFireBase(dataSnapshot);
             }
 
             @Override
@@ -122,8 +153,45 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
 
-    void addMarkersFromFireBase(){
+    @Override
+    protected void onStart() {
+        super.onStart();
+        startLocationUpdates();
+    }
 
+    @Override
+    protected void onStop() {
+        super.onStop();
+        stopLocationUpdates();
+    }
+
+
+    void addMarkersFromFireBase(DataSnapshot dataSnapshot) {
+        Log.w("Firebase", "dataSnapshot is: " + dataSnapshot);
+
+        HashMap<String, JSONObject> dataSnapshotValue = (HashMap<String, JSONObject>) dataSnapshot.getValue();
+        Log.w("Firebase", "dataSnapshotValue is: " + dataSnapshotValue);
+        String jsonString = new Gson().toJson(dataSnapshotValue);
+        Log.w("Firebase", "jsonString is: " + jsonString);
+        GsonBuilder gsonBuilder = new GsonBuilder();
+        MapDataSetDeserializer mapDataSetDeserializer = new MapDataSetDeserializer();
+        gsonBuilder.registerTypeAdapter(MapDataSet.class, mapDataSetDeserializer);
+        Gson gson = gsonBuilder.create();
+        MapDataSet markers = gson.fromJson(jsonString, MapDataSet.class);
+        Log.w("Firebase", "markers is: " + markers);
+        if (markers != null && markers.getLocations() != null && markers.getLocations().values() != null) {
+            for (MarkerLive m : markers.getLocations().values()) {
+                if (m.getMarkerOptions().getPosition() == null) continue;
+                MarkerOptions markerOptions = new MarkerOptions()
+                        .position(m.getMarkerOptions().getPosition())
+                        .title("Placeholder title :)")
+                        .snippet(m.getMarkerOptions().getSnippet())
+                        .icon(BitmapDescriptorFactory.defaultMarker //changes color
+                                (BitmapDescriptorFactory.HUE_GREEN + 20));
+                mMap.addMarker(markerOptions);
+            }
+
+        }
     }
 
     /**
@@ -161,6 +229,53 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         enableMyLocation();
         setInfoWindowClickToEditBookmark(mMap);
 
+    }
+
+    LocationCallback locationCallback = new LocationCallback() {
+        @Override
+        public void onLocationResult(LocationResult locationResult) {
+            super.onLocationResult(locationResult);
+            Log.w("lOCATION", "onLocationResult :" + locationResult.getLastLocation());
+            if (mMap != null) {
+                setUserLocationMarker(locationResult.getLastLocation());
+            }
+
+        }
+    };
+
+    private void setUserLocationMarker(Location lastLocation) {
+        if (lastLocation == null) {
+            Log.w("Location", "lastLocation is null");
+        }
+        LatLng latLng = new LatLng(lastLocation.getLatitude(), lastLocation.getLatitude());
+        if (userLocationMarker == null) {
+            //creat a new marker
+            MarkerOptions markerOptions = new MarkerOptions();
+            markerOptions.position(latLng);
+            userLocationMarker = mMap.addMarker(markerOptions);
+
+        } else { // use prev created marker
+            userLocationMarker.setPosition(latLng);
+
+        }
+        //mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng,17));
+
+    }
+
+
+    private void startLocationUpdates() {
+        //check location permission
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            enableMyLocation(); // if has no permission try making one
+            return;
+        }
+        //
+        fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper());
+
+    }
+
+    private void stopLocationUpdates() {
+        fusedLocationProviderClient.removeLocationUpdates(locationCallback);
     }
 
     // handles the creation of markers
