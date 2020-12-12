@@ -34,6 +34,12 @@
         android:hint="Enter Marker description"
         android:inputType="text" />
 
+    <Switch
+        android:id="@+id/private_switch"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Private" />
+
     <Button
         android:id="@+id/remove_button"
         android:layout_width="match_parent"

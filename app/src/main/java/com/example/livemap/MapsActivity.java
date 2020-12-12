@@ -88,6 +88,7 @@ import java.util.Locale;
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         ,CustomizeMarkerFragment.OnFragmentInteractionListener {
     private static final int REQUEST_LOCATION_PERMISSION = 1;
+    private static final int MARKER_IS_PRIVATE= 1;
     private static final String DEFAULT_TITLE = "Unnamed Marker";
     private GoogleMap mMap;
     private MacActions currAction;
@@ -245,12 +246,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     mMap = googleMap;
                     mMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
 
-//        //Add ground overlay example
-//        GroundOverlayOptions homeOverlay = new GroundOverlayOptions()
-//                .image(BitmapDescriptorFactory.fromResource(R.drawable.android))
-//                .position(arielCord, 100);
-//        mMap.addGroundOverlay(homeOverlay);
-
                     //set click functions
                     setMapClicks(mMap);
 
@@ -276,7 +271,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     }
                     LatLng latLng = new LatLng(lastLocation.getLatitude(), lastLocation.getLatitude());
                     if (userLocationMarker == null) {
-                        //creat a new marker
+                        //create a new marker
                         MarkerOptions markerOptions = new MarkerOptions();
                         markerOptions.position(latLng);
                         userLocationMarker = mMap.addMarker(markerOptions);
@@ -364,9 +359,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                 .position(latLng)
                                 .title(DEFAULT_TITLE);
                         Marker marker = mMap.addMarker(markerOptions);
-                        marker.setTag(0);
                         openMarkerCustomizationPopup(marker);
-
+                        //TODO marker is check:
+                        if((int)marker.getTag()==MARKER_IS_PRIVATE){
+                            //marker is private
+                        }
 
                         MarkerLive ml = new MarkerLive();
                         ml = new MarkerLive(sUid, markerOptions, true);

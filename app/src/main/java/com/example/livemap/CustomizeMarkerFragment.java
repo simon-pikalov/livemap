@@ -6,8 +6,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.RadioGroup;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -48,12 +50,24 @@ public class CustomizeMarkerFragment extends Fragment {
         // Inflate the layout for this fragment.
         final View rootView = inflater.inflate(R.layout.fragment_customize_marker,
                 container, false);
+
         final EditText inputMarkerName = rootView.findViewById(R.id.input_marker_name);
         final EditText inputMarkerDescription = rootView.findViewById(R.id.input_marker_description);
-
         final Button confirmButton = rootView.findViewById(R.id.confirm_button);
         final Button removeButton = rootView.findViewById(R.id.remove_button);
+        final Switch privateSwitch = rootView.findViewById(R.id.private_switch);
 
+        privateSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
+                    // The toggle is enabled
+                    marker.setTag(1);
+                } else {
+                    // The toggle is disabled
+                    marker.setTag(0);
+                }
+            }
+        });
         // do this when confirm is clicked
         confirmButton.setOnClickListener(new View.OnClickListener() {
             @Override
