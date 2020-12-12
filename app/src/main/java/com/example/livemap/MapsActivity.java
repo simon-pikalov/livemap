@@ -13,6 +13,7 @@ import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.Toast;
 
+import com.example.livemap.objects.json.MapDataSetDeserializer;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -30,8 +31,11 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.example.livemap.objects.*;
 import com.google.firebase.database.ValueEventListener;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
-import java.util.Collection;
+import org.json.JSONObject;
+
 import java.util.HashMap;
 import java.util.Locale;
 
@@ -59,8 +63,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 .add(R.id.fragment_container, mapFragment).commit();
         mapFragment.getMapAsync(this);
         currAction = MacActions.ADD;
-        sUid =  FirebaseAuth.getInstance().getCurrentUser().getUid(); // the user hash of the current user
-        mSwitchLocation =(Switch)findViewById(R.id.switchLocation);
+        sUid = FirebaseAuth.getInstance().getCurrentUser().getUid(); // the user hash of the current user
+        mSwitchLocation = (Switch) findViewById(R.id.switchLocation);
         mRef = rootNode.getReference("/root/markers/");
         mapCollection = new MapDataSet();
 
@@ -68,28 +72,26 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                Log.w("Firebase", "Value is: " + dataSnapshot.getValue());
-                HashMap<String , MarkerLive> markers = (HashMap<String, MarkerLive>) dataSnapshot.getValue();
-                Collection <MarkerLive> Collection = markers.values();
+                Log.w("Firebase", "dataSnapshot is: " + dataSnapshot);
 
-                mapCollection = new MapDataSet(markers);  //@TODO( later check one by one for more efficacy )
-                Log.w("Firebase", "deserialized Collection Value is: " + Collection);
-//                HashMap<String , MarkerLive> markers2 = new HashMap<>();
-//                MarkerLive tempMaprkLive = new MarkerLive();
-//                for(DataSnapshot mapSnapshot : dataSnapshot.getChildren()){
-//                    tempMaprkLive = mapSnapshot.getValue(MarkerLive.class);
-//                   markers2.put(tempMaprkLive.getMarkerHash(),tempMaprkLive);
-//                }
-
-                Log.w("Firebase", "deserialized Value is: " + markers);
-                Log.w("Firebase", "deserialized Value type is: " + markers.values().getClass());
-                Log.w("Firebase", "deserialized Value type is: " + markers.values());
-                for(MarkerLive m : Collection){
-                    mMap.addMarker((new MarkerOptions()
-                            .position(m.getMarker().getPosition())
+                HashMap<String, JSONObject> dataSnapshotValue = (HashMap<String, JSONObject>) dataSnapshot.getValue();
+                Log.w("Firebase", "dataSnapshotValue is: " + dataSnapshotValue);
+                String jsonString = new Gson().toJson(dataSnapshotValue);
+                Log.w("Firebase", "jsonString is: " + jsonString);
+                GsonBuilder gsonBuilder = new GsonBuilder();
+                MapDataSetDeserializer mapDataSetDeserializer = new MapDataSetDeserializer();
+                gsonBuilder.registerTypeAdapter(MapDataSet.class, mapDataSetDeserializer);
+                Gson gson = gsonBuilder.create();
+                MapDataSet markers  = gson.fromJson(jsonString, MapDataSet.class);
+                Log.w("Firebase", "markers is: " + markers);
+                for(MarkerLive m :markers.getLocations().values()){
+                    MarkerOptions markerOptions = new MarkerOptions()
+                            .position(m.getMarkerOptions().getPosition())
                             .title("Placeholder title :)")
+                            .snippet(m.getMarkerOptions().getSnippet())
                             .icon(BitmapDescriptorFactory.defaultMarker //changes color
-                                    (BitmapDescriptorFactory.HUE_YELLOW))));
+                                    (BitmapDescriptorFactory.HUE_GREEN));
+                    mMap.addMarker(markerOptions);
                 }
 
             }
@@ -131,10 +133,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
         double latAriel = 32.1046;
-        double lngAriel= 35.1745;
+        double lngAriel = 35.1745;
 
 
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(latAriel,lngAriel)));
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(latAriel, lngAriel)));
         LatLng arielCord = new LatLng(latAriel, lngAriel);
 
         //Add ground overlay example
@@ -151,6 +153,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         setInfoWindowClickToEditBookmark(mMap);
 
     }
+
     // handles the creation of markers
     private void setMapLongClick(final GoogleMap map) {
         map.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
@@ -158,23 +161,24 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             @Override
             public void onMapLongClick(LatLng latLng) {
 
-                if (currAction==MacActions.ADD){
-                    MarkerLive ml  = new MarkerLive();
+                if (currAction == MacActions.ADD) {
+                    MarkerLive ml = new MarkerLive();
                     String description = String.format(Locale.getDefault(),
                             "Lat: %1$.5f, Long: %2$.5f",
                             latLng.latitude,
                             latLng.longitude) + "\n Vasia Was here";
                     // create custom marker
-                    Marker marker = map.addMarker(new MarkerOptions()
+
+                    MarkerOptions markerOptions = new MarkerOptions()
                             .position(latLng)
                             .title("Placeholder title :)")
                             .snippet(description)
                             .icon(BitmapDescriptorFactory.defaultMarker //changes color
-                                    (BitmapDescriptorFactory.HUE_GREEN)));
-                    marker.setTag("custom");
-                    ml = new MarkerLive(sUid,marker,true);
+                                    (BitmapDescriptorFactory.HUE_GREEN));
+                    Marker marker = map.addMarker(markerOptions);
+                    ml = new MarkerLive(sUid, markerOptions, true);
 
-                    mRef = rootNode.getReference("/root/markers/"+ml.getMarker().hashCode());
+                    mRef = rootNode.getReference("/root/markers/" + ml.getMarkerOptions().hashCode());
                     mRef.setValue(ml);
                 }
 
@@ -193,8 +197,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         });
     }
+
     // checks if there is location access, if so enables location, otherwise asks
-    private void enableMyLocation(){
+    private void enableMyLocation() {
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED) {
@@ -205,6 +210,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     REQUEST_LOCATION_PERMISSION);
         }
     }
+
     //invoked on requestPermissions in enableMyLocation
     @Override
     public void onRequestPermissionsResult(int requestCode,
@@ -223,7 +229,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
-    void disableMyLocation(){
+    void disableMyLocation() {
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED) {
@@ -243,7 +249,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     @Override
                     public void onInfoWindowClick(Marker marker) {
                         if (marker.getTag() == "custom") {
-                            Toast.makeText(getApplicationContext(),"Info window clicked!",
+                            Toast.makeText(getApplicationContext(), "Info window clicked!",
                                     Toast.LENGTH_LONG).show();
 
                         }

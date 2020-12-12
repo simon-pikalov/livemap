@@ -43,4 +43,10 @@ public class MapDataSet implements MapCollection {
     }
 
 
+    @Override
+    public String toString() {
+        return "MapDataSet{" +
+                "locations=" + locations +
+                '}';
+    }
 }
