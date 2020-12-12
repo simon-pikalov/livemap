@@ -9,6 +9,8 @@ import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.CompoundButton;
+import android.widget.Switch;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -21,13 +23,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PointOfInterest;
-import com.google.android.gms.maps.model.Tile;
-import com.google.android.gms.maps.model.TileOverlay;
-import com.google.android.gms.maps.model.TileOverlayOptions;
-import com.google.android.gms.maps.model.TileProvider;
-import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -35,6 +31,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.example.livemap.objects.*;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Locale;
 
@@ -43,9 +40,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private GoogleMap mMap;
     private MacActions currAction;
+    private Switch mSwitchLocation; //to show or hide curr location
     FirebaseDatabase rootNode;
     DatabaseReference mRef;
     String sUid;
+    MapCollection mapCollection;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,22 +60,56 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mapFragment.getMapAsync(this);
         currAction = MacActions.ADD;
         sUid =  FirebaseAuth.getInstance().getCurrentUser().getUid(); // the user hash of the current user
-
+        mSwitchLocation =(Switch)findViewById(R.id.switchLocation);
         mRef = rootNode.getReference("/root/markers/");
+        mapCollection = new MapDataSet();
+
         mRef.addValueEventListener(new ValueEventListener() {
 
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                Log.w("Firebase", "Value is: " + dataSnapshot);
+                Log.w("Firebase", "Value is: " + dataSnapshot.getValue());
+                HashMap<String , MarkerLive> markers = (HashMap<String, MarkerLive>) dataSnapshot.getValue();
+                Collection <MarkerLive> Collection = markers.values();
 
-                //HashMap <String , MarkerLive> markers = dataSnapshot.getValue(HashMap.class);
-               // Log.d("Firebase", "Value is: " + markers);
+                mapCollection = new MapDataSet(markers);  //@TODO( later check one by one for more efficacy )
+                Log.w("Firebase", "deserialized Collection Value is: " + Collection);
+//                HashMap<String , MarkerLive> markers2 = new HashMap<>();
+//                MarkerLive tempMaprkLive = new MarkerLive();
+//                for(DataSnapshot mapSnapshot : dataSnapshot.getChildren()){
+//                    tempMaprkLive = mapSnapshot.getValue(MarkerLive.class);
+//                   markers2.put(tempMaprkLive.getMarkerHash(),tempMaprkLive);
+//                }
+
+                Log.w("Firebase", "deserialized Value is: " + markers);
+                Log.w("Firebase", "deserialized Value type is: " + markers.values().getClass());
+                Log.w("Firebase", "deserialized Value type is: " + markers.values());
+                for(MarkerLive m : Collection){
+                    mMap.addMarker((new MarkerOptions()
+                            .position(m.getMarker().getPosition())
+                            .title("Placeholder title :)")
+                            .icon(BitmapDescriptorFactory.defaultMarker //changes color
+                                    (BitmapDescriptorFactory.HUE_YELLOW))));
+                }
+
             }
 
             @Override
             public void onCancelled(DatabaseError error) {
                 // Failed to read value
                 Log.w("Firebase", "Failed to read value.", error.toException());
+            }
+        });
+
+        mSwitchLocation.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
+                    // The toggle is enabled
+                    enableMyLocation();
+                } else {
+                    disableMyLocation();
+                }
             }
         });
 
@@ -100,7 +133,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         double latAriel = 32.1046;
         double lngAriel= 35.1745;
 
-        
+
         mMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(latAriel,lngAriel)));
         LatLng arielCord = new LatLng(latAriel, lngAriel);
 
@@ -189,6 +222,20 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 }
         }
     }
+
+    void disableMyLocation(){
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED) {
+            mMap.setMyLocationEnabled(false);
+        } else {
+            ActivityCompat.requestPermissions(this, new String[]
+                            {Manifest.permission.ACCESS_FINE_LOCATION},
+                    REQUEST_LOCATION_PERMISSION);
+        }
+    }
+
+
     // listens to clicks on the info window, when clicked opens edit fragment
     private void setInfoWindowClickToEditBookmark(GoogleMap map) {
         map.setOnInfoWindowClickListener(

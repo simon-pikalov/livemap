@@ -4,11 +4,16 @@ package com.example.livemap.objects;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 
+/**
+ * This class if container of google  Marker with some adjustment
+ * @author Simon Pikalov
+ */
 public class MarkerLive  {
 
 
     private boolean isPublic;
     private String ownerHash;
+    private String markerHash;
     private Marker marker;
 
 
@@ -18,6 +23,7 @@ public class MarkerLive  {
         this.isPublic = isPublic;
         this.marker = marker;
         this.ownerHash = ownerHash;
+        this.markerHash = String.valueOf(marker.hashCode());
 
     }
 
@@ -47,7 +53,9 @@ public class MarkerLive  {
         this.marker = marker;
     }
 
-
+    public String getMarkerHash() {
+        return markerHash;
+    }
 
     @Override
     public String toString() {
