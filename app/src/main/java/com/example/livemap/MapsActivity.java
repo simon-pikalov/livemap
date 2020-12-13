@@ -139,34 +139,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 addMarkersFromFireBase(dataSnapshot);
-
-                Log.w("Firebase", "dataSnapshot is: " + dataSnapshot);
-
-                HashMap<String, JSONObject> dataSnapshotValue = (HashMap<String, JSONObject>) dataSnapshot.getValue();
-                Log.w("Firebase", "dataSnapshotValue is: " + dataSnapshotValue);
-                String jsonString = new Gson().toJson(dataSnapshotValue);
-                Log.w("Firebase", "jsonString is: " + jsonString);
-                GsonBuilder gsonBuilder = new GsonBuilder();
-                MapDataSetDeserializer mapDataSetDeserializer = new MapDataSetDeserializer();
-                gsonBuilder.registerTypeAdapter(MapDataSet.class, mapDataSetDeserializer);
-                Gson gson = gsonBuilder.create();
-                MapDataSet markers = gson.fromJson(jsonString, MapDataSet.class);
-                Log.w("Firebase", "markers is: " + markers);
-                if (markers != null && markers.getLocations() != null && markers.getLocations().values() != null) {
-                    for (MarkerLive m : markers.getLocations().values()) {
-                        if (m.getMarkerOptions().getPosition() == null) continue;
-                        MarkerOptions markerOptions = new MarkerOptions()
-                                .position(m.getMarkerOptions().getPosition())
-                                .title("Placeholder title :)")
-                                .snippet(m.getMarkerOptions().getSnippet())
-                                .icon(BitmapDescriptorFactory.defaultMarker //changes color
-                                        (BitmapDescriptorFactory.HUE_GREEN + 20));
-                        mMap.addMarker(markerOptions);
-                    }
-
-                }
-
-
             }
 
             @Override
@@ -206,7 +178,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         void addMarkersFromFireBase (DataSnapshot dataSnapshot) {
             Log.w("Firebase", "dataSnapshot is: " + dataSnapshot);
-
             HashMap<String, JSONObject> dataSnapshotValue = (HashMap<String, JSONObject>) dataSnapshot.getValue();
             Log.w("Firebase", "dataSnapshotValue is: " + dataSnapshotValue);
             String jsonString = new Gson().toJson(dataSnapshotValue);
@@ -226,7 +197,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             .snippet(m.getMarkerOptions().getSnippet())
                             .icon(BitmapDescriptorFactory.defaultMarker //changes color
                                     (BitmapDescriptorFactory.HUE_GREEN + 20));
-                    mMap.addMarker(markerOptions);
+                    if(mMap !=null)mMap.addMarker(markerOptions);
                 }
             }
         }
@@ -360,10 +331,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                 .title(DEFAULT_TITLE);
                         Marker marker = mMap.addMarker(markerOptions);
                         openMarkerCustomizationPopup(marker);
-                        //TODO marker is check:
-                        if((int)marker.getTag()==MARKER_IS_PRIVATE){
-                            //marker is private
-                        }
+//                        //TODO marker is check:
+//                        if((int)marker.getTag()==MARKER_IS_PRIVATE){
+//                            //marker is private
+//                        }
 
                         MarkerLive ml = new MarkerLive();
                         ml = new MarkerLive(sUid, markerOptions, true);

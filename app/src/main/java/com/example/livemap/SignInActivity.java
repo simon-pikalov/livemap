@@ -11,6 +11,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Switch;
 
+import com.example.livemap.objects.User;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.FirebaseApp;
@@ -20,6 +21,8 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.PhoneAuthCredential;
 import com.google.firebase.auth.PhoneAuthProvider;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.concurrent.TimeUnit;
 
@@ -29,7 +32,8 @@ public class SignInActivity extends AppCompatActivity {
     private Button mSend;
     private PhoneAuthProvider.OnVerificationStateChangedCallbacks mCallbacks;
     private String mVerificationId;
-
+    private FirebaseDatabase rootNode;
+    private DatabaseReference mRef;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,8 +44,8 @@ public class SignInActivity extends AppCompatActivity {
         mPhoneNumber = findViewById(R.id.phoneNumber);
         mCode = findViewById(R.id.code);
         mSend = findViewById(R.id.sendVerificationButton);
-
-
+        rootNode = FirebaseDatabase.getInstance();
+        mRef = rootNode.getReference("/root/users/");
         mSend.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -96,9 +100,20 @@ public class SignInActivity extends AppCompatActivity {
             }
         });
     }
+void addUserToFirebase() {
+    //@TODO this is hard coded , replace with hash and more generic method
+    boolean isAdmin = (true);
+   String sUid = FirebaseAuth.getInstance().getCurrentUser().getUid(); // the user hash of the current user
+    User cUser = new User(sUid, isAdmin);
+    Log.w("user",cUser.toString());
+    rootNode = FirebaseDatabase.getInstance();
+    mRef = rootNode.getReference("/root/users/" +sUid);
+    mRef.setValue(cUser);
+}
 
     private void userIsLoggedIn() {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        addUserToFirebase();
         if (user != null) {
             startActivity(new Intent(getApplicationContext(), MapsActivity.class));
             finish();
