@@ -2,20 +2,18 @@ package com.example.livemap;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
-import android.widget.RadioGroup;
 import android.widget.Switch;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
 
-import com.google.android.gms.maps.model.Marker;
+import com.example.livemap.objects.MarkerLive;
 
 /**
  * A simple {@link Fragment} subclass that shows a question
@@ -23,17 +21,18 @@ import com.google.android.gms.maps.model.Marker;
  * clicks "Yes" the text header changes to "Article: Like".
  * If the user clicks "No" the text header changes to "Thanks".
  */
-public class CustomizeMarkerFragment extends Fragment {
-    static Marker marker;
+public class NewMarkerFragment extends Fragment {
+    static MarkerLive markerLive;
     OnFragmentInteractionListener mListener;
 
-    public CustomizeMarkerFragment() {
+    public NewMarkerFragment() {
         // Required empty public constructor
     }
 
     interface OnFragmentInteractionListener {
         // this function only returns to caller activity
-        void customizeMarkerComplete();
+        void newMarkerCreated(MarkerLive ml);
+        void newMarkerCancel();
     }
     /**
      * Creates the view for the fragment.
@@ -48,23 +47,23 @@ public class CustomizeMarkerFragment extends Fragment {
                              Bundle savedInstanceState) {
 
         // Inflate the layout for this fragment.
-        final View rootView = inflater.inflate(R.layout.fragment_customize_marker,
+        final View rootView = inflater.inflate(R.layout.fragment_new_marker,
                 container, false);
 
-        final EditText inputMarkerName = rootView.findViewById(R.id.input_marker_name);
-        final EditText inputMarkerDescription = rootView.findViewById(R.id.input_marker_description);
-        final Button confirmButton = rootView.findViewById(R.id.confirm_button);
-        final Button removeButton = rootView.findViewById(R.id.remove_button);
-        final Switch privateSwitch = rootView.findViewById(R.id.private_switch);
+        final EditText inputMarkerName = rootView.findViewById(R.id.marker_name_create_window);
+        final EditText inputMarkerDescription = rootView.findViewById(R.id.marker_description_create_window);
+        final Button confirmButton = rootView.findViewById(R.id.confirm_button_create_window);
+        final Button removeButton = rootView.findViewById(R.id.remove_button_create_window);
+        final Switch privateSwitch = rootView.findViewById(R.id.private_switch_create_window);
 
         privateSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
                     // The toggle is enabled
-                    marker.setTag(1);
+                    markerLive.setPublic(false);
                 } else {
                     // The toggle is disabled
-                    marker.setTag(0);
+                    markerLive.setPublic(true);
                 }
             }
         });
@@ -74,18 +73,18 @@ public class CustomizeMarkerFragment extends Fragment {
             public void onClick(View view) {
                 String title = inputMarkerName.getText().toString();
                 String description = inputMarkerDescription.getText().toString();
-                marker.setTitle(title);
-                marker.setSnippet(description);
-                mListener.customizeMarkerComplete();
+                Log.w("NewMarkerFragment", "got title: "+title+" and description: "+ description);
+                markerLive.setTitle(title);
+                markerLive.setSnippet(description);
+                mListener.newMarkerCreated(markerLive);
             }
         });
-        // do this when remove is clicked
+        // when cancel is clicked the customized markerLive is returned null
         removeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                marker.remove();
-                mListener.customizeMarkerComplete();
-
+                markerLive = null;
+                mListener.newMarkerCancel();
             }
         });
 
@@ -93,9 +92,9 @@ public class CustomizeMarkerFragment extends Fragment {
         return rootView;
     }
     // marker can be null
-    public static CustomizeMarkerFragment newInstance(Marker m) {
-        marker = m;
-        return new CustomizeMarkerFragment();
+    public static NewMarkerFragment newInstance(MarkerLive ml) {
+        markerLive = ml;
+        return new NewMarkerFragment();
 
     }
 

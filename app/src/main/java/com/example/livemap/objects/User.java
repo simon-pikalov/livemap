@@ -1,28 +1,32 @@
 package com.example.livemap.objects;
 
+import java.util.HashMap;
+import java.util.UUID;
+
 public class User {
 
-    String userHash;
+    String name;
     boolean isAdmin;
-
+    String id;
+    HashMap<String, MarkerLive> markers;
+    HashMap<String, Group> groups;
 
     public User(String userName) {
         this.isAdmin = false;
-        this.userHash = userName;
+        this.id = UUID.randomUUID().toString();
+        markers = new HashMap<>();
+        groups = new HashMap<>();
     }
 
-
-    public User(String userName, boolean isAdmin) {
-        this.userHash = userName;
-        this.isAdmin = isAdmin;
+    public MarkerLive getMarkerLive(String id){return markers.get(id);}
+    public void addMarkerLive(MarkerLive ml){markers.put(ml.getMarkerHash(), ml);}
+    public void removeMarkerLive(MarkerLive ml){markers.remove(ml.getMarkerHash());}
+    public String getID() {
+        return id;
     }
 
-    public String getUserHash() {
-        return userHash;
-    }
-
-    public void setUserHash(String userHash) {
-        this.userHash = userHash;
+    public void setID(String id) {
+        this.id = id;
     }
 
     public boolean isAdmin() {
@@ -36,7 +40,7 @@ public class User {
     @Override
     public String toString() {
         return "User{" +
-                "userHash='" + userHash + '\'' +
+                "ID='" + id + '\'' +
                 ", isAdmin=" + isAdmin +
                 '}';
     }
