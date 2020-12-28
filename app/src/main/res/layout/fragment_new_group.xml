@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- fragment_edit_name.xml -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/customize_marker"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"
+    android:background="#FFFFFF"
+    android:orientation="vertical"
+    android:padding="8dp">
+
+    <TextView
+        android:id="@+id/title_create_window"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Create Spot"
+        android:textAlignment="center" />
+
+    <EditText
+        android:id="@+id/marker_name_create_window"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Enter marker name"
+        android:imeOptions="actionDone"
+        android:inputType="text"
+        android:textAlignment="center" />
+
+    <EditText
+        android:id="@+id/marker_description_create_window"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:hint="Enter Marker description"
+        android:inputType="text" />
+
+    <Switch
+        android:id="@+id/private_switch_create_window"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Private" />
+
+    <Button
+        android:id="@+id/confirm_button_create_window"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Confirm"
+        app:backgroundTint="#29782C" />
+
+    <Button
+        android:id="@+id/remove_button_create_window"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Cancel"
+        app:backgroundTint="#858585" />
+</LinearLayout>
