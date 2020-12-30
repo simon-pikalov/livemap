@@ -11,7 +11,7 @@ public class Group {
     private String name;
     private String id;
     // group is created using admin user
-    public Group(User admin, String n){
+    public Group(User.KeyClass k, User admin, String n){
         users = new HashMap<>();
         users.put(admin.getID(), admin);
         adminHash = admin.getID();
@@ -27,4 +27,6 @@ public class Group {
         users.remove(u.getID());
     }
     public String getID(){return id;}
+    public void setName(String name){this.name=name;}
+    public String getName(){return name;}
 }

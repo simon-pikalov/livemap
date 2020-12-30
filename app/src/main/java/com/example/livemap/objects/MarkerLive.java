@@ -1,6 +1,7 @@
 package com.example.livemap.objects;
 
 
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.UUID;
@@ -16,6 +17,8 @@ public class MarkerLive  {
     private String ownerHash;
     private String markerHash;
     private MarkerOptions markerOptions;
+    //remove when uploading to DB and add when creating marker on device
+    private Marker marker;
 
 
     public MarkerLive(){}
@@ -28,6 +31,8 @@ public class MarkerLive  {
     }
     public void setTitle(String title){this.markerOptions= markerOptions.title(title);}
     public void setSnippet(String snippet){ this.markerOptions = markerOptions.snippet(snippet);}
+    public void setMarker(Marker m){marker=m;}
+    public Marker getMarker(){return marker;}
 
     public String getTitle(){ return markerOptions.getTitle();}
     public String getSnippet(){return markerOptions.getSnippet();}

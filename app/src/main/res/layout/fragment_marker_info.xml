@@ -43,7 +43,7 @@
         app:layout_constraintVertical_bias="1.0" />
 
     <EditText
-        android:id="@+id/edit_marker_name_info_window"
+        android:id="@+id/group_search_box"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/small_margin"
@@ -54,7 +54,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.812"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/title_text_view_info_window" />
+        app:layout_constraintTop_toBottomOf="@+id/title_text" />
 
     <EditText
         android:id="@+id/edit_marker_description_info_window"
@@ -67,10 +67,10 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/edit_marker_name_info_window" />
+        app:layout_constraintTop_toBottomOf="@+id/group_search_box" />
 
     <TextView
-        android:id="@+id/title_text_view_info_window"
+        android:id="@+id/title_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/small_margin"
@@ -89,6 +89,6 @@
         app:layout_constraintBottom_toTopOf="@+id/middle_button_info_window"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/edit_marker_name_info_window" />
+        app:layout_constraintTop_toTopOf="@+id/group_search_box" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

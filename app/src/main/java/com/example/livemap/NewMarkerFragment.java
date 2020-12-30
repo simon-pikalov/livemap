@@ -50,10 +50,10 @@ public class NewMarkerFragment extends Fragment {
         final View rootView = inflater.inflate(R.layout.fragment_new_marker,
                 container, false);
 
-        final EditText inputMarkerName = rootView.findViewById(R.id.marker_name_create_window);
-        final EditText inputMarkerDescription = rootView.findViewById(R.id.marker_description_create_window);
-        final Button confirmButton = rootView.findViewById(R.id.confirm_button_create_window);
-        final Button removeButton = rootView.findViewById(R.id.remove_button_create_window);
+        final EditText inputMarkerName = rootView.findViewById(R.id.input_new_marker_name);
+        final EditText inputMarkerDescription = rootView.findViewById(R.id.input_new_marker_desc);
+        final Button confirmButton = rootView.findViewById(R.id.button_new_marker_confirm);
+        final Button cancelButton = rootView.findViewById(R.id.button_new_marker_cancel);
         final Switch privateSwitch = rootView.findViewById(R.id.private_switch_create_window);
 
         privateSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -80,7 +80,7 @@ public class NewMarkerFragment extends Fragment {
             }
         });
         // when cancel is clicked the customized markerLive is returned null
-        removeButton.setOnClickListener(new View.OnClickListener() {
+        cancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 markerLive = null;

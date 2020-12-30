@@ -11,14 +11,14 @@
     android:padding="8dp">
 
     <TextView
-        android:id="@+id/title_create_window"
+        android:id="@+id/title_new_marker"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Create Spot"
         android:textAlignment="center" />
 
     <EditText
-        android:id="@+id/marker_name_create_window"
+        android:id="@+id/input_new_marker_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Enter marker name"
@@ -27,7 +27,7 @@
         android:textAlignment="center" />
 
     <EditText
-        android:id="@+id/marker_description_create_window"
+        android:id="@+id/input_new_marker_desc"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:ems="10"
@@ -41,14 +41,14 @@
         android:text="Private" />
 
     <Button
-        android:id="@+id/confirm_button_create_window"
+        android:id="@+id/button_new_marker_confirm"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Confirm"
         app:backgroundTint="#29782C" />
 
     <Button
-        android:id="@+id/remove_button_create_window"
+        android:id="@+id/button_new_marker_cancel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Cancel"

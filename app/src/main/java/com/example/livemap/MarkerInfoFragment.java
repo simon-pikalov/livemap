@@ -30,8 +30,6 @@ public class MarkerInfoFragment extends Fragment {
     OnFragmentInteractionListener mListener;
     private String currentTitle;
     private String currentDescription;
-    private String lastTitle;
-    private String lastDescription;
 
     public MarkerInfoFragment() {
         // Required empty public constructor
@@ -59,12 +57,12 @@ public class MarkerInfoFragment extends Fragment {
         final View rootView = inflater.inflate(R.layout.fragment_marker_info,
                 container, false);
 
-        final TextView titleText = rootView.findViewById(R.id.title_text_view_info_window);
+        final TextView titleText = rootView.findViewById(R.id.title_text);
         final TextView descriptionText = rootView.findViewById(R.id.description_text_view_info_window);
         final Button editSaveButton = rootView.findViewById(R.id.bottom_right_button_info_window);
         final Button closeCancelButton = rootView.findViewById(R.id.bottom_left_button_info_window);
         final Button removeButton = rootView.findViewById(R.id.middle_button_info_window);
-        final EditText editTitle = rootView.findViewById(R.id.edit_marker_name_info_window);
+        final EditText editTitle = rootView.findViewById(R.id.group_search_box);
         final EditText editDescription = rootView.findViewById(R.id.edit_marker_description_info_window);
 
         currentDescription = markerLive.getMarkerOptions().getSnippet();

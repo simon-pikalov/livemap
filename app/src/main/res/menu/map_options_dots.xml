@@ -1,4 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:tools="http://schemas.android.com/tools"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
+    <item
+        android:id="@+id/manu_item_main_menu_create_group"
+        android:title="Create Group"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/manu_item_main_menu_my_groups"
+        android:title="My Groups" />
+    <item
+        android:id="@+id/app_bar_switch"
+        android:title="Hide Me"
+        app:actionLayout="@layout/switch_item"
+        app:showAsAction="always" />
 </menu>
