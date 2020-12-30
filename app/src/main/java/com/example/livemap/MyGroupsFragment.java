@@ -2,6 +2,7 @@ package com.example.livemap;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.util.Log;
 import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -60,7 +61,7 @@ public class MyGroupsFragment extends Fragment {
                              Bundle savedInstanceState) {
 
         final List<Group> groups = mUser.getGroups();
-
+        Log.w("MyGroupsFragment", "size of user's groups is: "+groups.size());
         // Inflate the layout for this fragment.
         final View rootView = inflater.inflate(R.layout.fragment_my_groups,
                 container, false);
@@ -98,8 +99,8 @@ public class MyGroupsFragment extends Fragment {
         closeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                mListener.myGroupsFragmentComplete();
             }
-
 
         });
 

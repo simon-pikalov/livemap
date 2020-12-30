@@ -17,6 +17,7 @@ public class Group {
         adminHash = admin.getID();
         name = n;
         id = UUID.randomUUID().toString();
+        admin.joinGroup(this);
     }
 
     public void addUser(User u){
