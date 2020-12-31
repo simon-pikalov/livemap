@@ -8,23 +8,37 @@ import java.util.UUID;
 
 public class User {
 
-    String name;
-    boolean isAdmin;
-    String id;
-    HashMap<String, MarkerLive> markers;
-    HashMap<String, Group> groups;
+    private String name;
+    private boolean isAdmin;
+    private String id;
+    private String phone;
+    private HashMap<String, MarkerLive> markers;
+    private HashMap<String, Group> groups;
+
+
+
+    public User(String userName) {
+        this.isAdmin = false;
+        this.id = UUID.randomUUID().toString();
+        markers = new HashMap<>();
+        groups = new HashMap<>();
+    }
+
 
     // this class' purpose is to allow only a user to create a group
     public static final class KeyClass { private KeyClass() {} }
     private static final KeyClass userClassKey = new KeyClass();
 
-    public User(String userName) {
-        this.isAdmin = false;
-        name = userName;
+
+    public User(String name, String phone) {
+
         this.id = UUID.randomUUID().toString();
+        this.name = name;
+        this.phone = phone;
         markers = new HashMap<>();
         groups = new HashMap<>();
     }
+
 
     public MarkerLive getMarkerLive(String id){return markers.get(id);}
     public void addMarkerLive(MarkerLive ml){markers.put(ml.getMarkerHash(), ml);}
@@ -32,8 +46,6 @@ public class User {
     public String getID() {
         return id;
     }
-    public String getName(){return name;}
-    public void setName(String n){name=n;}
     // create and join group
     public Group createGroup(String groupName){
         return new Group(userClassKey, this, groupName);
@@ -56,6 +68,23 @@ public class User {
 
     public void setAdmin(boolean admin) {
         isAdmin = admin;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
     }
 
     @Override

@@ -10,9 +10,16 @@
     <item
         android:id="@+id/manu_item_main_menu_my_groups"
         android:title="My Groups" />
+
+    <item
+        android:id="@+id/menu_item_main_menu_my_contacts"
+        android:title="My Contacts" />
+
     <item
         android:id="@+id/app_bar_switch"
         android:title="Hide Me"
         app:actionLayout="@layout/switch_item"
         app:showAsAction="always" />
+
+
 </menu>
