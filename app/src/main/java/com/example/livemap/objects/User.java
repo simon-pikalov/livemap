@@ -32,8 +32,11 @@ public class User {
 
 
     public User(String name, String phone) {
+        this.id = UUID.randomUUID().toString();
         this.name = name;
         this.phone = phone;
+        markers = new HashMap<>();
+        groups = new HashMap<>();
     }
 
 

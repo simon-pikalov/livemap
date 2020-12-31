@@ -1,6 +1,7 @@
 package com.example.livemap;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresPermission;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -8,8 +9,10 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
 import android.util.Log;
@@ -19,6 +22,7 @@ import android.view.MenuItem;
 import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.Toast;
+import android.Manifest;
 
 import com.example.livemap.objects.json.MapDataSetDeserializer;
 import com.google.android.gms.location.LocationCallback;
@@ -81,9 +85,6 @@ NewGroupFragment.OnFragmentInteractionListener, MyGroupsFragment.OnFragmentInter
     // Livemap objects
     User mUser;
 
-
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -133,19 +134,14 @@ NewGroupFragment.OnFragmentInteractionListener, MyGroupsFragment.OnFragmentInter
             }
         });
 
-//        mSwitchLocation.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-//            @Override
-//            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-//                if (isChecked) {
-//                    // The toggle is enabled
-//                    enableMyLocation();
-//                } else {
-//                    disableMyLocation();
-//                }
-//            }
-//        });
-
+        getPremission();
     }// END OF ONCREATE
+
+    private void getPremission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            requestPermissions(new String[]{Manifest.permission.WRITE_CONTACTS,Manifest.permission.READ_CONTACTS},1);
+        }
+    }
 
 
     @Override
@@ -164,6 +160,11 @@ NewGroupFragment.OnFragmentInteractionListener, MyGroupsFragment.OnFragmentInter
                 return true;
             case R.id.manu_item_main_menu_my_groups:
                 openMyGroupsFragment(mUser);
+                return true;
+            case R.id.menu_item_main_menu_my_contacts:
+                Intent intent = new Intent(getApplicationContext(),FindUserActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
                 return true;
             case R.id.app_bar_switch:
                 // change checked state
