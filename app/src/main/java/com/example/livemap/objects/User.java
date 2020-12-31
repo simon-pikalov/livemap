@@ -8,15 +8,14 @@ import java.util.UUID;
 
 public class User {
 
-    String name;
-    boolean isAdmin;
-    String id;
-    HashMap<String, MarkerLive> markers;
-    HashMap<String, Group> groups;
+    private String name;
+    private boolean isAdmin;
+    private String id;
+    private String phone;
+    private HashMap<String, MarkerLive> markers;
+    private HashMap<String, Group> groups;
 
-    // this class' purpose is to allow only a user to create a group
-    public static final class KeyClass { private KeyClass() {} }
-    private static final KeyClass groupConstructorKey = new KeyClass();
+
 
     public User(String userName) {
         this.isAdmin = false;
@@ -24,6 +23,19 @@ public class User {
         markers = new HashMap<>();
         groups = new HashMap<>();
     }
+
+
+    // this class' purpose is to allow only a user to create a group
+    public static final class KeyClass { private KeyClass() {} }
+    private static final KeyClass groupConstructorKey = new KeyClass();
+
+
+
+    public User(String name, String phone) {
+        this.name = name;
+        this.phone = phone;
+    }
+
 
     public MarkerLive getMarkerLive(String id){return markers.get(id);}
     public void addMarkerLive(MarkerLive ml){markers.put(ml.getMarkerHash(), ml);}
@@ -50,6 +62,23 @@ public class User {
 
     public void setAdmin(boolean admin) {
         isAdmin = admin;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
     }
 
     @Override

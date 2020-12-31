@@ -9,12 +9,14 @@ import androidx.fragment.app.FragmentTransaction;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Looper;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.Toast;
 
@@ -26,6 +28,8 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.Circle;
+import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -67,6 +71,7 @@ NewGroupFragment.OnFragmentInteractionListener, MyGroupsFragment.OnFragmentInter
     private FusedLocationProviderClient fusedLocationProviderClient;
     private LocationRequest locationRequest;
     private Marker userLocationMarker;
+    Circle userLocationAccuuracyCircle;
 
     // fragment related vars
     private boolean isCustomizeFragmentDisplayed = false;
@@ -118,7 +123,7 @@ NewGroupFragment.OnFragmentInteractionListener, MyGroupsFragment.OnFragmentInter
 
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                //addMarkersFromFireBase(dataSnapshot);
+                addMarkersFromFireBase(dataSnapshot);
             }
 
             @Override
@@ -164,7 +169,8 @@ NewGroupFragment.OnFragmentInteractionListener, MyGroupsFragment.OnFragmentInter
                 // change checked state
                 anonymousSwitchChecked = !item.isChecked();
                 item.setChecked(anonymousSwitchChecked);
-                // TODO hide user
+                if(anonymousSwitchChecked) disableMyLocation();
+                else enableMyLocation();
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -235,7 +241,6 @@ NewGroupFragment.OnFragmentInteractionListener, MyGroupsFragment.OnFragmentInter
         @Override
         public void onLocationResult(LocationResult locationResult) {
             super.onLocationResult(locationResult);
-            Log.w("lOCATION", "onLocationResult :" + locationResult.getLastLocation());
             if (mMap != null) {
                 setUserLocationMarker(locationResult.getLastLocation());
             }
@@ -247,16 +252,34 @@ NewGroupFragment.OnFragmentInteractionListener, MyGroupsFragment.OnFragmentInter
         if (lastLocation == null) {
             Log.w("Location", "lastLocation is null");
         }
-        LatLng latLng = new LatLng(lastLocation.getLatitude(), lastLocation.getLatitude());
+        LatLng latLng = new LatLng(lastLocation.getLatitude(), lastLocation.getLongitude());
         if (userLocationMarker == null) {
             //create a new marker
             MarkerOptions markerOptions = new MarkerOptions();
+            markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.arrow));
+            markerOptions.rotation(lastLocation.getBearing());
             markerOptions.position(latLng);
+            markerOptions.anchor((float)0.5,(float)0.5);
             userLocationMarker = mMap.addMarker(markerOptions);
 
         } else { // use prev created marker
             userLocationMarker.setPosition(latLng);
+            userLocationMarker.setRotation(lastLocation.getBearing());
 
+        }
+        if (userLocationAccuuracyCircle == null ){
+            CircleOptions circleOptions = new CircleOptions();
+            circleOptions.center(latLng);
+            circleOptions.strokeWidth(4);
+            circleOptions.strokeColor(Color.argb(255,255,0,0));
+            circleOptions.fillColor(Color.argb(32,255,0,0));
+            circleOptions.radius(lastLocation.getAccuracy());
+            userLocationAccuuracyCircle = mMap.addCircle(circleOptions);
+        }
+
+        else {
+            userLocationAccuuracyCircle.setCenter(latLng);
+            userLocationAccuuracyCircle.setRadius(lastLocation.getAccuracy());
         }
         //mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng,17));
 
