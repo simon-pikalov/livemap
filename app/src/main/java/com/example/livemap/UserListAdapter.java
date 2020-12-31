@@ -4,7 +4,9 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -14,23 +16,19 @@ import com.example.livemap.objects.User;
 
 import java.util.List;
 
-public class GroupListAdapter extends RecyclerView.Adapter<GroupListAdapter.GroupViewHolder> {
-    private final List<Group> mGroupList;
+public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.GroupViewHolder> {
+    private final List<User> mUserList;
     private LayoutInflater mInflater;
-    private User mUser;
-    private Group mSelectedGroup;
-    interface OnItemClickListener{
-        void onItemClick(Group group);
-    }
+    private final Button mRemoveUserButton;
+    private User mSelectedUser;
+    private Group mGroup;
 
-    OnItemClickListener mItemListener;
+    public UserListAdapter(Context context, Group group, Button rub) {
 
-
-    public GroupListAdapter(Context context, OnItemClickListener itemListener, User user,List<Group> groupList) {
-        mItemListener = itemListener;
         mInflater = LayoutInflater.from(context);
-        this.mGroupList = groupList;
-        mUser=user;
+        mUserList = group.getUsers();
+        mRemoveUserButton = rub;
+        mGroup = group;
     }
 
 
@@ -38,9 +36,7 @@ public class GroupListAdapter extends RecyclerView.Adapter<GroupListAdapter.Grou
             implements View.OnClickListener{
 
         public final TextView groupItemView;
-        final GroupListAdapter mAdapter;
-
-
+        final UserListAdapter mAdapter;
 
         /**
          * Creates a new custom view holder to hold the view to display in
@@ -50,24 +46,32 @@ public class GroupListAdapter extends RecyclerView.Adapter<GroupListAdapter.Grou
          * @param adapter The adapter that manages the the data and views
          *                for the RecyclerView.
          */
-        public GroupViewHolder(@NonNull View itemView, GroupListAdapter adapter) {
+        public GroupViewHolder(@NonNull View itemView, UserListAdapter adapter) {
             super(itemView);
-            groupItemView = itemView.findViewById(R.id.group_item_for_list);
+            groupItemView = itemView.findViewById(R.id.user_item_group_list);
             this.mAdapter = adapter;
             itemView.setOnClickListener(this);
 
-
+            mRemoveUserButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    mGroup.removeUser(mSelectedUser);
+                    mUserList.remove(mSelectedUser);
+                    mAdapter.notifyDataSetChanged();
+                }
+            });
         }
+
         @Override
         public void onClick(View view) {
             // Get the position of the item that was clicked.
-            int mPosition = getAdapterPosition();
+            int mPosition = getLayoutPosition();
             // Use that to access the affected item in mWordList.
-            mSelectedGroup = mGroupList.get(mPosition);
-            mItemListener.onItemClick(mSelectedGroup);
-            //Log.w("GroupList", "selected group: "+mSelectedGroup.getName());
+            mSelectedUser = mUserList.get(mPosition);
+            mRemoveUserButton.setVisibility(View.VISIBLE);
 
         }
+
 
     }
 
@@ -93,22 +97,19 @@ public class GroupListAdapter extends RecyclerView.Adapter<GroupListAdapter.Grou
      */
     @NonNull
     @Override
-    public GroupListAdapter.GroupViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View mItemView = mInflater.inflate(R.layout.my_groups_item, parent, false);
+    public UserListAdapter.GroupViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View mItemView = mInflater.inflate(R.layout.user_item, parent, false);
         return new GroupViewHolder(mItemView,this);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull GroupListAdapter.GroupViewHolder holder, int position) {
-
-        Group mCurrent = mGroupList.get(position);
+    public void onBindViewHolder(@NonNull UserListAdapter.GroupViewHolder holder, int position) {
+        User mCurrent = mUserList.get(position);
         holder.groupItemView.setText(mCurrent.getName());
     }
 
     @Override
     public int getItemCount() {
-        return mGroupList.size();
+        return mUserList.size();
     }
-
-
 }

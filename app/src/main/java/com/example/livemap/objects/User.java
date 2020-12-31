@@ -16,10 +16,11 @@ public class User {
 
     // this class' purpose is to allow only a user to create a group
     public static final class KeyClass { private KeyClass() {} }
-    private static final KeyClass groupConstructorKey = new KeyClass();
+    private static final KeyClass userClassKey = new KeyClass();
 
     public User(String userName) {
         this.isAdmin = false;
+        name = userName;
         this.id = UUID.randomUUID().toString();
         markers = new HashMap<>();
         groups = new HashMap<>();
@@ -31,14 +32,19 @@ public class User {
     public String getID() {
         return id;
     }
-
+    public String getName(){return name;}
+    public void setName(String n){name=n;}
     // create and join group
     public Group createGroup(String groupName){
-        return new Group(groupConstructorKey, this, groupName);
+        return new Group(userClassKey, this, groupName);
     }
 
-    public void joinGroup(Group g){groups.put(g.getID(),g);}
-    public void exitGroup(Group g){groups.remove(g.getID());}
+    public void joinGroup(Group.KeyClass k,Group g){
+        groups.put(g.getID(),g);
+    }
+    public void exitGroup(Group.KeyClass k,Group g){
+        groups.remove(g.getID());
+    }
     public List<Group> getGroups(){return new ArrayList<Group>(groups.values());}
     public void setID(String id) {
         this.id = id;

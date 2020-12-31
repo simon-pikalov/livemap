@@ -52,7 +52,8 @@ import java.util.HashMap;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback
         , MarkerInfoFragment.OnFragmentInteractionListener, NewMarkerFragment.OnFragmentInteractionListener,
-NewGroupFragment.OnFragmentInteractionListener, MyGroupsFragment.OnFragmentInteractionListener{
+NewGroupFragment.OnFragmentInteractionListener, MyGroupsFragment.OnFragmentInteractionListener,
+GroupFragment.OnFragmentInteractionListener{
 
     private static final int REQUEST_LOCATION_PERMISSION = 1;
     private static final int MARKER_IS_PRIVATE= 1;
@@ -84,8 +85,12 @@ NewGroupFragment.OnFragmentInteractionListener, MyGroupsFragment.OnFragmentInter
         super.onCreate(savedInstanceState);
         mUser = new User("Jonny");
 
+        User user1 = new User("bobby");
+        User user2 = new User("jimmy");
+        User user3 = new User("tom");
         // for testing purposes
-        mUser.createGroup("group1");
+        Group g1 = mUser.createGroup("group1 not empty");
+        g1.addUser(user1).addUser(user2).addUser(user3);
         mUser.createGroup("group2");
         mUser.createGroup("group3");
 
@@ -439,7 +444,6 @@ NewGroupFragment.OnFragmentInteractionListener, MyGroupsFragment.OnFragmentInter
     }
 
     private void openNewGroupFragment (User u){
-        isInfoWindowDisplayed = true;
         // Instantiate the fragment.
         NewGroupFragment newGroupFragment =
                 com.example.livemap.NewGroupFragment.newInstance(u);
@@ -454,7 +458,6 @@ NewGroupFragment.OnFragmentInteractionListener, MyGroupsFragment.OnFragmentInter
     }
 
     public void closeNewGroupFragment () {
-        isInfoWindowDisplayed = false;
         // Get the FragmentManager.
         FragmentManager fragmentManager = getSupportFragmentManager();
         // Check to see if the fragment is already showing.
@@ -469,7 +472,6 @@ NewGroupFragment.OnFragmentInteractionListener, MyGroupsFragment.OnFragmentInter
     }
 
     private void openMyGroupsFragment (User u){
-        isInfoWindowDisplayed = true;
         // Instantiate the fragment.
         MyGroupsFragment myGroupsFragment =
                 com.example.livemap.MyGroupsFragment.newInstance(u);
@@ -484,7 +486,6 @@ NewGroupFragment.OnFragmentInteractionListener, MyGroupsFragment.OnFragmentInter
     }
 
     public void closeMyGroupsFragment () {
-        isInfoWindowDisplayed = false;
         // Get the FragmentManager.
         FragmentManager fragmentManager = getSupportFragmentManager();
         // Check to see if the fragment is already showing.
@@ -495,6 +496,33 @@ NewGroupFragment.OnFragmentInteractionListener, MyGroupsFragment.OnFragmentInter
             FragmentTransaction fragmentTransaction =
                     fragmentManager.beginTransaction();
             fragmentTransaction.remove(myGroupsFragment).commit();
+        }
+    }
+    private void openGroupFragment (Group group){
+        // Instantiate the fragment.
+        GroupFragment groupFragment =
+                com.example.livemap.GroupFragment.newInstance(mUser,group);
+        // Get the FragmentManager and start a transaction.
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager
+                .beginTransaction();
+
+        // Add the customizeMarkerFragment.
+        fragmentTransaction.add(R.id.fragment_container,
+                groupFragment).addToBackStack(null).commit();
+    }
+
+    public void closeGroupFragment () {
+        // Get the FragmentManager.
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        // Check to see if the fragment is already showing.
+        GroupFragment groupFragment = (GroupFragment) fragmentManager
+                .findFragmentById(R.id.fragment_container);
+        if (groupFragment != null) {
+            // Create and commit the transaction to remove the fragment.
+            FragmentTransaction fragmentTransaction =
+                    fragmentManager.beginTransaction();
+            fragmentTransaction.remove(groupFragment).commit();
         }
     }
 
@@ -556,6 +584,16 @@ NewGroupFragment.OnFragmentInteractionListener, MyGroupsFragment.OnFragmentInter
 
     @Override
     public void myGroupsFragmentComplete(){closeMyGroupsFragment();}
+
+    @Override
+    public void myGroupsFragmentToGroupFragment(Group g) {
+        openGroupFragment(g);
+        closeMyGroupsFragment();
+    }
+
+
+    @Override
+    public void groupFragmentComplete() { closeGroupFragment(); }
 }
 
 

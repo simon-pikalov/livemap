@@ -12,6 +12,8 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -28,7 +30,7 @@ import java.util.List;
  * clicks "Yes" the text header changes to "Article: Like".
  * If the user clicks "No" the text header changes to "Thanks".
  */
-public class MyGroupsFragment extends Fragment {
+public class MyGroupsFragment extends Fragment implements GroupListAdapter.OnItemClickListener {
     final static int VIEW_MODE = 1;
     final static int SELECT_MODE = 0;
     private RecyclerView mRecyclerView;
@@ -37,17 +39,27 @@ public class MyGroupsFragment extends Fragment {
     OnFragmentInteractionListener mListener;
 
 
+
     static User mUser;
+    private List<Group> mGroupList;
+    private Group mSelectedGroup;
     private int windowMode = VIEW_MODE;
+    private Button viewGroupButton;
+    private Button closeButton;
+    private Button exitGroupButton;
 
     public MyGroupsFragment() {
         // Required empty public constructor
     }
 
+
+
     interface OnFragmentInteractionListener {
         // this function only returns to caller activity
         void myGroupsFragmentComplete();
+        void myGroupsFragmentToGroupFragment(Group g);
     }
+
     /**
      * Creates the view for the fragment.
      *
@@ -58,44 +70,52 @@ public class MyGroupsFragment extends Fragment {
      */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+                                                        Bundle savedInstanceState) {
+        mGroupList = mUser.getGroups();
 
-        final List<Group> groups = mUser.getGroups();
-        Log.w("MyGroupsFragment", "size of user's groups is: "+groups.size());
         // Inflate the layout for this fragment.
         final View rootView = inflater.inflate(R.layout.fragment_my_groups,
                 container, false);
 
+
+        viewGroupButton = rootView.findViewById(R.id.view_group_button_my_groups);
+        closeButton = rootView.findViewById(R.id.close_button_my_groups);
+        exitGroupButton = rootView.findViewById(R.id.exit_group_button);
+
+        // button only visible when some group is selected
+        viewGroupButton.setVisibility(View.INVISIBLE);
+        exitGroupButton.setVisibility(View.INVISIBLE);
+
         // Get a handle to the RecyclerView.
         mRecyclerView = rootView.findViewById(R.id.my_groups_list);
         // Create an adapter and supply the data to be displayed.
-        mAdapter = new GroupListAdapter(getContext(), groups);
+
+        mAdapter = new GroupListAdapter(getContext(), this, mUser, mGroupList);
         // Connect the adapter with the RecyclerView.
         mRecyclerView.setAdapter(mAdapter);
         // Give the RecyclerView a default layout manager.
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        final Button viewGroupButton = rootView.findViewById(R.id.bottom_right_button_info_window);
-        final Button closeButton = rootView.findViewById(R.id.bottom_left_button_info_window);
-
-        // button only visible when some group is selected
-        viewGroupButton.setVisibility(View.INVISIBLE);
-
-
-
-
-        // in the start the buttons are for close and edit, when in edit this will change
-        // to cancel and save
-        viewGroupButton.setText("View");
-        closeButton.setText("Close");
-
-
+        exitGroupButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mSelectedGroup.removeUser(mUser);
+                // keep group list synced
+                mGroupList.remove(mSelectedGroup);
+                mAdapter.notifyDataSetChanged();
+                exitGroupButton.setVisibility(View.INVISIBLE);
+                viewGroupButton.setVisibility(View.INVISIBLE);
+            }
+        });
         viewGroupButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                if(mSelectedGroup != null){
+                    mListener.myGroupsFragmentToGroupFragment(mSelectedGroup);
+                }
             }
         });
+
         closeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -130,6 +150,15 @@ public class MyGroupsFragment extends Fragment {
             throw new ClassCastException(context.toString()
                     + getResources().getString(R.string.exception_message));
         }
+    }
+
+
+    @Override
+    public void onItemClick(Group group) {
+        mSelectedGroup = group;
+        exitGroupButton.setVisibility(View.VISIBLE);
+        viewGroupButton.setVisibility(View.VISIBLE);
+        Log.w("MyGroups", "got group: "+group.getName());
     }
 
 

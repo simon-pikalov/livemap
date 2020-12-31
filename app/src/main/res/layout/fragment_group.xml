@@ -9,17 +9,17 @@
     android:padding="@dimen/small_padding">
 
     <Button
-        android:id="@+id/view_group_button_my_groups"
+        android:id="@+id/remove_button_group_fragment"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/small_margin"
         android:layout_marginBottom="4dp"
-        android:text="View"
+        android:text="Remove"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
     <Button
-        android:id="@+id/close_button_my_groups"
+        android:id="@+id/close_button_group_fragment"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/small_margin"
@@ -28,19 +28,8 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
-    <Button
-        android:id="@+id/exit_group_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Exit"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/view_group_button_my_groups"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toEndOf="@+id/close_button_my_groups"
-        app:layout_constraintTop_toBottomOf="@+id/my_groups_list" />
-
     <TextView
-        android:id="@+id/title_text"
+        android:id="@+id/group_title_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/small_margin"
@@ -51,14 +40,14 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/my_groups_list"
+        android:id="@+id/users_recycler_view"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_margin="@dimen/small_margin"
         android:padding="@dimen/small_padding"
-        app:layout_constraintBottom_toTopOf="@+id/close_button_my_groups"
+        app:layout_constraintBottom_toTopOf="@+id/close_button_group_fragment"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/title_text" />
+        app:layout_constraintTop_toBottomOf="@+id/group_title_text" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

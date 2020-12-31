@@ -21,7 +21,7 @@
         android:id="@+id/group_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Enter marker name"
+        android:hint="Enter group name"
         android:imeOptions="actionDone"
         android:inputType="text"
         android:textAlignment="center" />
@@ -31,7 +31,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:ems="10"
-        android:hint="Enter Marker description"
+        android:hint="Enter group description"
         android:inputType="text" />
 
     <Button
