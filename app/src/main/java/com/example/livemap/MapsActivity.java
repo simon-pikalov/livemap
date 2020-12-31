@@ -185,7 +185,8 @@ GroupFragment.OnFragmentInteractionListener{
     @Override
     protected void onStart () {
         super.onStart();
-        startLocationUpdates();
+        //TODO start updates
+        //startLocationUpdates();
     }
 
     @Override
@@ -239,7 +240,7 @@ GroupFragment.OnFragmentInteractionListener{
         //set click functions
         setMapClicks(mMap);
 
-        enableMyLocation();
+        //enableMyLocation();
 
     }
 
@@ -389,7 +390,7 @@ GroupFragment.OnFragmentInteractionListener{
                 if (grantResults.length > 0
                         && grantResults[0]
                         == PackageManager.PERMISSION_GRANTED) {
-                    enableMyLocation();
+                    //enableMyLocation();
                     break;
                 }
         }
