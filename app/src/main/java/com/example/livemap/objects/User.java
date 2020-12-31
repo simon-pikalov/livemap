@@ -19,6 +19,7 @@ public class User {
 
     public User(String userName) {
         this.isAdmin = false;
+        name = userName;
         this.id = UUID.randomUUID().toString();
         markers = new HashMap<>();
         groups = new HashMap<>();
