@@ -20,17 +20,17 @@ public class MapDataSet implements MapCollection {
 
     @Override
     public void insert(MarkerLive markerLive) {
-    locations.put(markerLive.getMarkerHash(),markerLive);
+    locations.put(markerLive.getHash(),markerLive);
     }
 
     @Override
     public void remove(MarkerLive markerLive) {
-        locations.remove(markerLive.getMarkerHash());
+        locations.remove(markerLive.getHash());
     }
 
     @Override
     public boolean contains(MarkerLive markerLive) {
-        return locations.containsKey(markerLive.getMarkerHash());
+        return locations.containsKey(markerLive.getHash());
     }
 
 

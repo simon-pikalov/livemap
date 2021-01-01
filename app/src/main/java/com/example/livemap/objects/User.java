@@ -42,8 +42,12 @@ public class User {
 
 
     public MarkerLive getMarkerLive(String id){return markers.get(id);}
-    public void addMarkerLive(MarkerLive ml){markers.put(ml.getMarkerHash(), ml);}
-    public void removeMarkerLive(MarkerLive ml){markers.remove(ml.getMarkerHash());}
+    public boolean hasMarker(String id){
+        if(markers.containsKey(id)) return true;
+        return false;
+    }
+    public void addMarkerLive(MarkerLive ml){markers.put(ml.getHash(), ml);}
+    public void removeMarkerLive(MarkerLive ml){markers.remove(ml.getHash());}
     public String getID() {
         return id;
     }

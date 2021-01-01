@@ -105,7 +105,6 @@ GroupFragment.OnFragmentInteractionListener{
         currAction = MacActions.ADD;
 
 
-
         sUid = FirebaseAuth.getInstance().getCurrentUser().getUid(); // the user hash of the current user
         //mSwitchLocation = (Switch) findViewById(R.id.switchLocation);
         mapCollection = new MapDataSet();
@@ -118,12 +117,11 @@ GroupFragment.OnFragmentInteractionListener{
         locationRequest.setFastestInterval(100); //mils interval
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
+        getPermission();
 
-
-        getPremission();
     }// END OF ONCREATE
 
-    private void getPremission() {
+    private void getPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             requestPermissions(new String[]{Manifest.permission.WRITE_CONTACTS,Manifest.permission.READ_CONTACTS},1);
         }
@@ -196,7 +194,7 @@ GroupFragment.OnFragmentInteractionListener{
 
         //set click functions
         setMapClicks(mMap);
-        mFireFunc= new FirebaseFunctionalities(mMap);
+        mFireFunc= new FirebaseFunctionalities(mMap, mUser);
         //enableMyLocation();
     }
 
@@ -264,17 +262,16 @@ GroupFragment.OnFragmentInteractionListener{
         fusedLocationProviderClient.removeLocationUpdates(locationCallback);
     }
 
-
+///////////////MAP ON CLICK START/////////////////////////////////
 
     private void setMapClicks ( final GoogleMap map){
         map.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
 
             @Override
-            // called when long clicking on map
+            // called when long clicking on map creates new marker
             public void onMapLongClick(LatLng latLng) {
                 if (currAction == MacActions.ADD) {
-                    MarkerOptions markerOptions = new MarkerOptions().position(latLng);
-                    MarkerLive ml = new MarkerLive(sUid, markerOptions, true);
+                    MarkerLive ml = new MarkerLive(sUid, latLng, true);
                     //Marker marker = mMap.addMarker(markerOptions);
                     openNewMarkerPopup(ml);
                 }
@@ -314,12 +311,11 @@ GroupFragment.OnFragmentInteractionListener{
                     public void onInfoWindowClick(Marker marker) {
                         MarkerLive ml = (MarkerLive)marker.getTag();
                         openMarkerInfoWindow(ml, marker);
-                        //TODO open marker info window
-
                     }
                 });
     }
 
+///////////////MAP ON CLICK END/////////////////////////////////
 
     // checks if there is location access, if so enables location, otherwise asks
     private void enableMyLocation () {
@@ -364,6 +360,72 @@ GroupFragment.OnFragmentInteractionListener{
         }
     }
 
+
+    // gets data from new marker fragment and creates new marker
+    @Override
+    public void newMarkerFragmentCreate(MarkerLive ml) {
+
+        mFireFunc.addMarkerToFirebase(ml);
+//        Log.w("MapsActivityJon", "MarkerLive is: "+ml.toString());
+//        mUser.addMarkerLive(ml);
+//        Marker newMarker = mMap.addMarker(ml.getMarkerOptions());
+//        // attaching markerLive object pointer to every marker and vice versa
+//        ml.attachMarker(newMarker);
+
+
+        closeNewMarkerPopup();
+    }
+
+    @Override
+    public void newMarkerFragmentCancel() {
+        closeNewMarkerPopup();
+    }
+
+
+    @Override
+    public void markerInfoCompleteNoChange () {
+        closeMarkerInfoWindow();
+    }
+
+    @Override
+    public void markerInfoCompleteChange(MarkerLive ml, Marker m) {
+        // TODO save changes to firebase
+
+        // this is temp for testing, should actually be rebuilt from database
+        m.setSnippet(ml.getSnippet());
+        m.setTitle(ml.getTitle());
+        closeMarkerInfoWindow ();
+
+    }
+
+    @Override
+    public void markerInfoCompleteDelete(MarkerLive ml, Marker m) {
+        //TODO remove from firebase
+        mUser.removeMarkerLive(ml);
+        m.remove();
+        closeMarkerInfoWindow ();
+    }
+
+
+    @Override
+    public void newGroupComplete() {
+        closeNewGroupFragment();
+    }
+
+    @Override
+    public void myGroupsFragmentComplete(){closeMyGroupsFragment();}
+
+    @Override
+    public void myGroupsFragmentToGroupFragment(Group g) {
+        openGroupFragment(g);
+        closeMyGroupsFragment();
+    }
+
+    @Override
+    public void groupFragmentComplete() { closeGroupFragment(); }
+
+    //////////////FRAGMENT OPENERS AND CLOSERS////////////////////
+    //TODO make one function for all fragment openers
 
     private void openNewMarkerPopup (MarkerLive ml){
         isCustomizeFragmentDisplayed = true;
@@ -506,75 +568,7 @@ GroupFragment.OnFragmentInteractionListener{
             fragmentTransaction.remove(groupFragment).commit();
         }
     }
-
-    // gets data from new marker fragment and creates new marker
-    @Override
-    public void newMarkerCreated(MarkerLive ml) {
-
-        Log.w("MapsActivityJon", "MarkerLive is: "+ml.toString());
-        mUser.addMarkerLive(ml);
-        Marker newMarker = mMap.addMarker(ml.getMarkerOptions());
-        // attaching markerLive object pointer to every marker and vice versa
-        newMarker.setTag(ml);
-        ml.setMarker(newMarker);
-        //TODO add marker to database
-
-//                    mRef = rootNode.getReference("/root/markers/" + ml.getMarkerOptions().hashCode());
-//                    mRef.setValue(ml);
-//                    markerOptions.icon(BitmapDescriptorFactory.defaultMarker //changes color
-//                            (BitmapDescriptorFactory.HUE_GREEN));
-
-        closeNewMarkerPopup();
-    }
-
-    @Override
-    public void newMarkerCancel() {
-        closeNewMarkerPopup();
-    }
-
-
-    @Override
-    public void markerInfoCompleteNoChange () {
-        closeMarkerInfoWindow();
-    }
-
-    @Override
-    public void markerInfoCompleteChange(MarkerLive ml, Marker m) {
-        // TODO save changes to firebase
-
-        // this is temp for testing, should actually be rebuilt from database
-        m.setSnippet(ml.getSnippet());
-        m.setTitle(ml.getTitle());
-        closeMarkerInfoWindow ();
-
-    }
-
-    @Override
-    public void markerInfoCompleteDelete(MarkerLive ml, Marker m) {
-        //TODO remove from firebase
-        mUser.removeMarkerLive(ml);
-        m.remove();
-        closeMarkerInfoWindow ();
-    }
-
-
-    @Override
-    public void newGroupComplete() {
-        closeNewGroupFragment();
-    }
-
-    @Override
-    public void myGroupsFragmentComplete(){closeMyGroupsFragment();}
-
-    @Override
-    public void myGroupsFragmentToGroupFragment(Group g) {
-        openGroupFragment(g);
-        closeMyGroupsFragment();
-    }
-
-
-    @Override
-    public void groupFragmentComplete() { closeGroupFragment(); }
+    //////////////FRAGMENT OPENERS AND CLOSERS END////////////////////
 }
 
 

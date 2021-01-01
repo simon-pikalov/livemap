@@ -31,8 +31,8 @@ public class NewMarkerFragment extends Fragment {
 
     interface OnFragmentInteractionListener {
         // this function only returns to caller activity
-        void newMarkerCreated(MarkerLive ml);
-        void newMarkerCancel();
+        void newMarkerFragmentCreate(MarkerLive ml);
+        void newMarkerFragmentCancel();
     }
     /**
      * Creates the view for the fragment.
@@ -76,7 +76,7 @@ public class NewMarkerFragment extends Fragment {
                 Log.w("NewMarkerFragment", "got title: "+title+" and description: "+ description);
                 markerLive.setTitle(title);
                 markerLive.setSnippet(description);
-                mListener.newMarkerCreated(markerLive);
+                mListener.newMarkerFragmentCreate(markerLive);
             }
         });
         // when cancel is clicked the customized markerLive is returned null
@@ -84,7 +84,7 @@ public class NewMarkerFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 markerLive = null;
-                mListener.newMarkerCancel();
+                mListener.newMarkerFragmentCancel();
             }
         });
 
