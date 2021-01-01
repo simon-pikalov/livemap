@@ -1,7 +1,6 @@
 package com.example.livemap;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresPermission;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -19,12 +18,10 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.Toast;
-import android.Manifest;
 
-import com.example.livemap.objects.json.MapDataSetDeserializer;
+import com.example.livemap.utils.FirebaseFunctionalities;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
@@ -45,18 +42,13 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.example.livemap.objects.*;
 import com.google.firebase.database.ValueEventListener;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-
 
 import android.location.Location;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 
-import org.json.JSONObject;
 
-import java.util.HashMap;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback
         , MarkerInfoFragment.OnFragmentInteractionListener, NewMarkerFragment.OnFragmentInteractionListener,
@@ -69,14 +61,13 @@ GroupFragment.OnFragmentInteractionListener{
     private GoogleMap mMap;
     private MacActions currAction;
     private Switch mSwitchLocation; //to show or hide curr location
-    private FirebaseDatabase rootNode;
-    private DatabaseReference mRef;
     private String sUid;
     private MapCollection mapCollection;
     private FusedLocationProviderClient fusedLocationProviderClient;
     private LocationRequest locationRequest;
     private Marker userLocationMarker;
     Circle userLocationAccuuracyCircle;
+    FirebaseFunctionalities mFireFunc;
 
     // fragment related vars
     private boolean isCustomizeFragmentDisplayed = false;
@@ -89,18 +80,18 @@ GroupFragment.OnFragmentInteractionListener{
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mUser = new User("Jonny");
+        // an object that takes care of functions related to Firebase
 
+        // for testing purposes
+        mUser = new User("Jonny");
         User user1 = new User("bobby");
         User user2 = new User("jimmy");
         User user3 = new User("tom");
-        // for testing purposes
         Group g1 = mUser.createGroup("group1 not empty");
         g1.addUser(user1).addUser(user2).addUser(user3);
         mUser.createGroup("group2");
         mUser.createGroup("group3");
 
-        rootNode = FirebaseDatabase.getInstance();
         setContentView(R.layout.activity_maps);
         // Create new runtime instance of map fragment
         SupportMapFragment mapFragment = SupportMapFragment.newInstance();
@@ -112,9 +103,11 @@ GroupFragment.OnFragmentInteractionListener{
 
 
         currAction = MacActions.ADD;
+
+
+
         sUid = FirebaseAuth.getInstance().getCurrentUser().getUid(); // the user hash of the current user
         //mSwitchLocation = (Switch) findViewById(R.id.switchLocation);
-        mRef = rootNode.getReference("/root/markers/");
         mapCollection = new MapDataSet();
 
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
@@ -125,19 +118,7 @@ GroupFragment.OnFragmentInteractionListener{
         locationRequest.setFastestInterval(100); //mils interval
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
-        mRef.addValueEventListener(new ValueEventListener() {
 
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                addMarkersFromFireBase(dataSnapshot);
-            }
-
-            @Override
-            public void onCancelled(DatabaseError error) {
-                // Failed to read value
-                Log.w("Firebase", "Failed to read value.", error.toException());
-            }
-        });
 
         getPremission();
     }// END OF ONCREATE
@@ -196,31 +177,7 @@ GroupFragment.OnFragmentInteractionListener{
     }
 
 
-    void addMarkersFromFireBase (DataSnapshot dataSnapshot) {
-        Log.w("Firebase", "dataSnapshot is: " + dataSnapshot);
-        HashMap<String, JSONObject> dataSnapshotValue = (HashMap<String, JSONObject>) dataSnapshot.getValue();
-        Log.w("Firebase", "dataSnapshotValue is: " + dataSnapshotValue);
-        String jsonString = new Gson().toJson(dataSnapshotValue);
-        Log.w("Firebase", "jsonString is: " + jsonString);
-        GsonBuilder gsonBuilder = new GsonBuilder();
-        MapDataSetDeserializer mapDataSetDeserializer = new MapDataSetDeserializer();
-        gsonBuilder.registerTypeAdapter(MapDataSet.class, mapDataSetDeserializer);
-        Gson gson = gsonBuilder.create();
-        MapDataSet markers = gson.fromJson(jsonString, MapDataSet.class);
-        Log.w("Firebase", "markers is: " + markers);
-        if (markers != null && markers.getLocations() != null && markers.getLocations().values() != null) {
-            for (MarkerLive m : markers.getLocations().values()) {
-                if (m.getMarkerOptions().getPosition() == null) continue;
-                MarkerOptions markerOptions = new MarkerOptions()
-                        .position(m.getMarkerOptions().getPosition())
-                        .title("Placeholder title :)")
-                        .snippet(m.getMarkerOptions().getSnippet())
-                        .icon(BitmapDescriptorFactory.defaultMarker //changes color
-                                (BitmapDescriptorFactory.HUE_GREEN + 20));
-                if(mMap !=null)mMap.addMarker(markerOptions);
-            }
-        }
-    }
+
 
 
     /**
@@ -239,9 +196,8 @@ GroupFragment.OnFragmentInteractionListener{
 
         //set click functions
         setMapClicks(mMap);
-
+        mFireFunc= new FirebaseFunctionalities(mMap);
         //enableMyLocation();
-
     }
 
     LocationCallback locationCallback = new LocationCallback() {
@@ -551,7 +507,7 @@ GroupFragment.OnFragmentInteractionListener{
         }
     }
 
-
+    // gets data from new marker fragment and creates new marker
     @Override
     public void newMarkerCreated(MarkerLive ml) {
 

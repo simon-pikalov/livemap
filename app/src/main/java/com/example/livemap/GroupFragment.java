@@ -59,6 +59,7 @@ public class GroupFragment extends Fragment {
 
         // create a remove user button that will only be visible when a user is selected
         Button removeUserButton = rootView.findViewById(R.id.remove_button_group_fragment);
+        Button inviteButton = rootView.findViewById(R.id.invite_button_group_fragment);
         TextView titleText = rootView.findViewById(R.id.group_title_text);
         titleText.setText(mGroup.getName());
         removeUserButton.setVisibility(View.INVISIBLE);

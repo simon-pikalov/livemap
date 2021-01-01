@@ -9,24 +9,41 @@
     android:padding="@dimen/small_padding">
 
     <Button
-        android:id="@+id/remove_button_group_fragment"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="@dimen/small_margin"
-        android:layout_marginBottom="4dp"
-        android:text="Remove"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
-
-    <Button
         android:id="@+id/close_button_group_fragment"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/small_margin"
-        android:layout_marginBottom="16dp"
         android:text="Close"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintEnd_toStartOf="@+id/remove_button_group_fragment"
+        app:layout_constraintHorizontal_bias="0.207"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/users_recycler_view"
+        app:layout_constraintVertical_bias="0.0" />
+
+    <Button
+        android:id="@+id/remove_button_group_fragment"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/small_margin"
+        android:text="Remove"
+        app:layout_constraintEnd_toStartOf="@+id/invite_button_group_fragment"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/close_button_group_fragment"
+        tools:layout_editor_absoluteY="643dp" />
+
+    <Button
+        android:id="@+id/invite_button_group_fragment"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/small_margin"
+        android:text="Invite"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.703"
+        app:layout_constraintStart_toEndOf="@+id/remove_button_group_fragment"
+        app:layout_constraintTop_toBottomOf="@+id/users_recycler_view"
+        app:layout_constraintVertical_bias="0.0" />
 
     <TextView
         android:id="@+id/group_title_text"
@@ -45,8 +62,9 @@
         android:layout_height="0dp"
         android:layout_margin="@dimen/small_margin"
         android:padding="@dimen/small_padding"
-        app:layout_constraintBottom_toTopOf="@+id/close_button_group_fragment"
+        app:layout_constraintBottom_toTopOf="@+id/remove_button_group_fragment"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/group_title_text" />
 
