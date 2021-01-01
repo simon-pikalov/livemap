@@ -2,6 +2,7 @@ package com.example.livemap.objects;
 
 
 import com.example.livemap.utils.LatLngLive;
+import com.example.livemap.utils.MarkerOwner;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
@@ -18,10 +19,11 @@ import java.util.UUID;
 @IgnoreExtraProperties
 public class MarkerLive  {
 
-
+    private MarkerOwner owner;
+    private String ownerId;
     private boolean isPublic;
-    private String ownerHash;
-    private String hash;
+    private String id;
+    private boolean visible;
     private String title;
     private String snippet;
     private LatLngLive position;
@@ -33,23 +35,59 @@ public class MarkerLive  {
 
     public MarkerLive(){}
 
-    public MarkerLive(String ownerHash, LatLng position,boolean isPublic) {
+    public MarkerLive(MarkerOwner owner, LatLng latLng ,boolean isPublic) {
         this.isPublic = isPublic;
-        this.position = new LatLngLive(position);
-        this.ownerHash = ownerHash;
-        this.hash = UUID.randomUUID().toString();
+        this.owner = owner;
+        this.position=new LatLngLive(latLng);
+        this.id = UUID.randomUUID().toString();
     }
-
-    public MarkerLive(String ownerHash, MarkerOptions markerOptions,boolean isPublic) {
+    public MarkerLive(MarkerOwner owner, MarkerOptions markerOptions,boolean isPublic) {
+        this(owner, markerOptions.getPosition(), isPublic);
         this.isPublic = isPublic;
-        this.position = new LatLngLive(markerOptions.getPosition());
         this.title = markerOptions.getTitle();
         this.snippet = markerOptions.getSnippet();
-        this.ownerHash = ownerHash;
-        this.hash = UUID.randomUUID().toString();
         this.rotation = markerOptions.getRotation();
         this.icon = markerOptions.getIcon();
+        this.owner=owner;
     }
+
+
+
+    public void restoreOwner(User user){
+        if(ownerId==user.getId()){
+            owner = user;
+        }
+        else {
+            Group group = user.getGroupById(ownerId);
+            if (group != null) owner=group;
+            else throw new RuntimeException("attempted to restore a marker without existing owner");
+        }
+    }
+
+    public MarkerLive attachMarker(Marker m){
+        this.marker=m;
+        m.setTag(this);
+        return this;
+    }
+
+    public void updateMarker(){
+        if(marker==null){
+            throw new NullPointerException("MarkerLive is not attached to a Marker");
+        }
+        marker.setTitle(title);
+        marker.setSnippet(snippet);
+        marker.setIcon(icon);
+        marker.setPosition(position.getLatLng());
+        marker.setRotation(rotation);
+        marker.setVisible(visible);
+    }
+
+
+    public void cleanupMarker(){
+        owner.removeMarkerLive(this);
+        marker.remove();
+    }
+
 
     public MarkerLive setTitle(String title){
         this.title=title;
@@ -59,13 +97,6 @@ public class MarkerLive  {
         this.snippet = snippet;
         return this;
     }
-
-    public MarkerLive attachMarker(Marker m){
-        this.marker=m;
-        m.setTag(this);
-        return this;
-    }
-
     public MarkerLive setPosition(LatLng pos){
         this.position = new LatLngLive(pos);
         return this;
@@ -83,11 +114,17 @@ public class MarkerLive  {
     public boolean isPublic() {
         return isPublic;
     }
-    public String getOwnerHash() {
-        return ownerHash;
-    }
+    public boolean isVisible(){return visible;}
 
+    public String getOwnerId() { return owner.getId(); }
+    public void setOwnerId(String id) { this.ownerId=id; }
+
+    @Exclude
     public LatLng getGoogleLatLng(){return position.getLatLng();}
+
+    public void setVisible(boolean visible) {
+        this.visible = visible;
+    }
 
     @Exclude
     public MarkerOptions getMarkerOptions(){
@@ -100,28 +137,23 @@ public class MarkerLive  {
         isPublic = aPublic;
     }
 
+    public String getId() {
+        return id;
+    }
 
+    @Exclude
+    public MarkerOwner getOwner() {
+        return owner;
+    }
 
-
-//    public void setOwnerHash(String ownerHash) {
-//        this.ownerHash = ownerHash;
-//    }
-
-
-
-    public String getHash() {
-        return hash;
+    public void setOwner(MarkerOwner owner) {
+        this.owner = owner;
     }
 
     @Override
     public String toString() {
-        return "MarkerLive{" +
-                "isPublic=" + isPublic +
-                ", ownerHash='" + ownerHash + '\'' +
-                ", hash='" + hash + '\'' +
+        return "MarkerLive{id='" + id + '\'' +
                 ", Position=" + getPosition() +
-                ", Title=" + getTitle() +
-                ", Snippet=" + getSnippet() +
-                '}';
+                ", Title=" + getTitle() +  '}';
     }
 }

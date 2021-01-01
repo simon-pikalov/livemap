@@ -38,8 +38,8 @@ public class MarkerInfoFragment extends Fragment {
     interface OnFragmentInteractionListener {
         // this function only returns to caller activity
         void markerInfoCompleteNoChange();
-        void markerInfoCompleteChange(MarkerLive ml, Marker m);
-        void markerInfoCompleteDelete(MarkerLive ml, Marker m);
+        void markerInfoCompleteChange(MarkerLive ml);
+        void markerInfoCompleteDelete(MarkerLive ml);
     }
     /**
      * Creates the view for the fragment.
@@ -129,7 +129,8 @@ public class MarkerInfoFragment extends Fragment {
                     if(changesMade){
                         markerLive.setTitle(currentTitle);
                         markerLive.setSnippet(currentDescription);
-                        mListener.markerInfoCompleteChange(markerLive, marker);
+                        markerLive.updateMarker();
+                        mListener.markerInfoCompleteChange(markerLive);
 
                     }
                     else {
@@ -154,7 +155,7 @@ public class MarkerInfoFragment extends Fragment {
         removeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mListener.markerInfoCompleteDelete(markerLive, marker);
+                mListener.markerInfoCompleteDelete(markerLive);
             }
         });
 
@@ -164,7 +165,6 @@ public class MarkerInfoFragment extends Fragment {
     // marker can be null
     public static MarkerInfoFragment newInstance(MarkerLive ml, Marker m) {
         markerLive = ml;
-        marker = m;
         return new MarkerInfoFragment();
 
     }

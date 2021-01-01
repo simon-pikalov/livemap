@@ -271,7 +271,7 @@ GroupFragment.OnFragmentInteractionListener{
             // called when long clicking on map creates new marker
             public void onMapLongClick(LatLng latLng) {
                 if (currAction == MacActions.ADD) {
-                    MarkerLive ml = new MarkerLive(sUid, latLng, true);
+                    MarkerLive ml = new MarkerLive(mUser, latLng, true);
                     //Marker marker = mMap.addMarker(markerOptions);
                     openNewMarkerPopup(ml);
                 }
@@ -388,21 +388,16 @@ GroupFragment.OnFragmentInteractionListener{
     }
 
     @Override
-    public void markerInfoCompleteChange(MarkerLive ml, Marker m) {
+    public void markerInfoCompleteChange(MarkerLive ml) {
         // TODO save changes to firebase
-
-        // this is temp for testing, should actually be rebuilt from database
-        m.setSnippet(ml.getSnippet());
-        m.setTitle(ml.getTitle());
         closeMarkerInfoWindow ();
-
     }
 
     @Override
-    public void markerInfoCompleteDelete(MarkerLive ml, Marker m) {
+    public void markerInfoCompleteDelete(MarkerLive ml) {
         //TODO remove from firebase
-        mUser.removeMarkerLive(ml);
-        m.remove();
+        mFireFunc.removeMarkerFromFirebase(ml);
+        ml.cleanupMarker();
         closeMarkerInfoWindow ();
     }
 

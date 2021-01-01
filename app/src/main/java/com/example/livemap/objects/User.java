@@ -1,12 +1,13 @@
 package com.example.livemap.objects;
 
+import com.example.livemap.utils.MarkerOwner;
+
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
-public class User {
+public class User implements MarkerOwner {
 
     private String name;
     private boolean isAdmin;
@@ -46,9 +47,9 @@ public class User {
         if(markers.containsKey(id)) return true;
         return false;
     }
-    public void addMarkerLive(MarkerLive ml){markers.put(ml.getHash(), ml);}
-    public void removeMarkerLive(MarkerLive ml){markers.remove(ml.getHash());}
-    public String getID() {
+    public void addMarkerLive(MarkerLive ml){markers.put(ml.getId(), ml);}
+    public void removeMarkerLive(MarkerLive ml){markers.remove(ml.getId());}
+    public String getId() {
         return id;
     }
     // create and join group
@@ -57,12 +58,13 @@ public class User {
     }
 
     public void joinGroup(Group.KeyClass k,Group g){
-        groups.put(g.getID(),g);
+        groups.put(g.getId(),g);
     }
     public void exitGroup(Group.KeyClass k,Group g){
-        groups.remove(g.getID());
+        groups.remove(g.getId());
     }
     public List<Group> getGroups(){return new ArrayList<Group>(groups.values());}
+    public Group getGroupById(String id){return groups.get(id);}
     public void setID(String id) {
         this.id = id;
     }
