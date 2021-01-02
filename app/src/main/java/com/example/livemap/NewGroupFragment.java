@@ -10,7 +10,9 @@ import android.widget.EditText;
 
 import androidx.fragment.app.Fragment;
 
+import com.example.livemap.objects.Group;
 import com.example.livemap.objects.User;
+import com.google.firebase.database.FirebaseDatabase;
 
 /**
  * A simple {@link Fragment} subclass that shows a question
@@ -59,11 +61,11 @@ public class NewGroupFragment extends Fragment {
             public void onClick(View view) {
                 String title = inputName.getText().toString();
                 String description = inputDescription.getText().toString();
-                mUser.createGroup(title);
+                Group newGroup = mUser.createGroup(title);
+                mUser.getFireFunc().addGroupToFirebase(newGroup);
                 mListener.newGroupComplete();
             }
         });
-        // when cancel is clicked the customized markerLive is returned null
         removeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

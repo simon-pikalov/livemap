@@ -6,7 +6,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -26,7 +25,7 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.GroupV
     public UserListAdapter(Context context, Group group, Button rub) {
 
         mInflater = LayoutInflater.from(context);
-        mUserList = group.getUsers();
+        mUserList = group.getUsersList();
         mRemoveUserButton = rub;
         mGroup = group;
     }

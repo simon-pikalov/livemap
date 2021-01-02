@@ -36,18 +36,12 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PointOfInterest;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 import com.example.livemap.objects.*;
-import com.google.firebase.database.ValueEventListener;
 
 import android.location.Location;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
-
 
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback
@@ -59,9 +53,10 @@ GroupFragment.OnFragmentInteractionListener{
     private static final int MARKER_IS_PRIVATE= 1;
     private static final String DEFAULT_TITLE = "Unnamed Marker";
     private GoogleMap mMap;
+    private User mUser;
     private MacActions currAction;
     private Switch mSwitchLocation; //to show or hide curr location
-    private String sUid;
+//    private String sUid;
     private MapCollection mapCollection;
     private FusedLocationProviderClient fusedLocationProviderClient;
     private LocationRequest locationRequest;
@@ -75,22 +70,11 @@ GroupFragment.OnFragmentInteractionListener{
     private boolean anonymousSwitchChecked = false;
 
     // Livemap objects
-    User mUser;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         // an object that takes care of functions related to Firebase
-
-        // for testing purposes
-        mUser = new User("Jonny");
-        User user1 = new User("bobby");
-        User user2 = new User("jimmy");
-        User user3 = new User("tom");
-        Group g1 = mUser.createGroup("group1 not empty");
-        g1.addUser(user1).addUser(user2).addUser(user3);
-        mUser.createGroup("group2");
-        mUser.createGroup("group3");
 
         setContentView(R.layout.activity_maps);
         // Create new runtime instance of map fragment
@@ -104,9 +88,6 @@ GroupFragment.OnFragmentInteractionListener{
 
         currAction = MacActions.ADD;
 
-
-        sUid = FirebaseAuth.getInstance().getCurrentUser().getUid(); // the user hash of the current user
-        //mSwitchLocation = (Switch) findViewById(R.id.switchLocation);
         mapCollection = new MapDataSet();
 
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
@@ -194,7 +175,21 @@ GroupFragment.OnFragmentInteractionListener{
 
         //set click functions
         setMapClicks(mMap);
-        mFireFunc= new FirebaseFunctionalities(mMap, mUser);
+
+        String userId = FirebaseAuth.getInstance().getUid();
+        mFireFunc= new FirebaseFunctionalities(mMap);
+        mUser = mFireFunc.getCurrentUser();
+
+        // for testing purposes
+        User user1 = new User("bobby");
+        User user2 = new User("jimmy");
+        User user3 = new User("tom");
+
+        Group g1 = mUser.createGroup("group1 not empty");
+        g1.addUser(user1).addUser(user2).addUser(user3);
+        mUser.createGroup("group2");
+        mUser.createGroup("group3");
+
         //enableMyLocation();
     }
 
@@ -271,7 +266,7 @@ GroupFragment.OnFragmentInteractionListener{
             // called when long clicking on map creates new marker
             public void onMapLongClick(LatLng latLng) {
                 if (currAction == MacActions.ADD) {
-                    MarkerLive ml = new MarkerLive(mUser, latLng, true);
+                    MarkerLive ml = new MarkerLive(mUser, mUser.getId(), latLng, true);
                     //Marker marker = mMap.addMarker(markerOptions);
                     openNewMarkerPopup(ml);
                 }
@@ -395,9 +390,8 @@ GroupFragment.OnFragmentInteractionListener{
 
     @Override
     public void markerInfoCompleteDelete(MarkerLive ml) {
-        //TODO remove from firebase
         mFireFunc.removeMarkerFromFirebase(ml);
-        ml.cleanupMarker();
+        ml.cleanup();
         closeMarkerInfoWindow ();
     }
 
@@ -418,6 +412,8 @@ GroupFragment.OnFragmentInteractionListener{
 
     @Override
     public void groupFragmentComplete() { closeGroupFragment(); }
+
+
 
     //////////////FRAGMENT OPENERS AND CLOSERS////////////////////
     //TODO make one function for all fragment openers

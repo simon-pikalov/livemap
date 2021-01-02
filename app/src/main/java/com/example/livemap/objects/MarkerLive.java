@@ -21,6 +21,10 @@ public class MarkerLive  {
 
     private MarkerOwner owner;
     private String ownerId;
+    //this can be different from owner ID, for example when it is
+    // owned by a group and created by a user, marker can be deleted both
+    // by owner (e.g. group admin when in group) and by creator (e.g. regular user in group)
+    private String creatorId;
     private boolean isPublic;
     private String id;
     private boolean visible;
@@ -28,21 +32,27 @@ public class MarkerLive  {
     private String snippet;
     private LatLngLive position;
     private float rotation;
+    private int numOfCopies;
     private BitmapDescriptor icon;
     //remove when uploading to DB and add when creating marker on device
     private transient Marker marker;
 
-
+    // for Firebase serialization
     public MarkerLive(){}
 
-    public MarkerLive(MarkerOwner owner, LatLng latLng ,boolean isPublic) {
+    // standard constructor, constructor with MarkerOptions uses it
+    public MarkerLive(MarkerOwner owner, String creatorId, LatLng latLng ,boolean isPublic) {
         this.isPublic = isPublic;
+        this.creatorId = creatorId;
         this.owner = owner;
         this.position=new LatLngLive(latLng);
         this.id = UUID.randomUUID().toString();
+        // this is the number of copies of this marker, if it's 1 then it's safe to remove from
+        // database, otherwise instead of removing it only the number of copies will be reduced by 1
+        this.numOfCopies = 1;
     }
-    public MarkerLive(MarkerOwner owner, MarkerOptions markerOptions,boolean isPublic) {
-        this(owner, markerOptions.getPosition(), isPublic);
+    public MarkerLive(MarkerOwner owner, String creatorId,MarkerOptions markerOptions,boolean isPublic) {
+        this(owner, creatorId,markerOptions.getPosition(), isPublic);
         this.isPublic = isPublic;
         this.title = markerOptions.getTitle();
         this.snippet = markerOptions.getSnippet();
@@ -52,7 +62,7 @@ public class MarkerLive  {
     }
 
 
-
+    // attach marker to user or group after restoring from database
     public void restoreOwner(User user){
         if(ownerId==user.getId()){
             owner = user;
@@ -63,6 +73,7 @@ public class MarkerLive  {
             else throw new RuntimeException("attempted to restore a marker without existing owner");
         }
     }
+
 
     public MarkerLive attachMarker(Marker m){
         this.marker=m;
@@ -82,8 +93,8 @@ public class MarkerLive  {
         marker.setVisible(visible);
     }
 
-
-    public void cleanupMarker(){
+    // removes itself from owners and deletes corresponding marker from map
+    public void cleanup(){
         owner.removeMarkerLive(this);
         marker.remove();
     }
@@ -155,5 +166,21 @@ public class MarkerLive  {
         return "MarkerLive{id='" + id + '\'' +
                 ", Position=" + getPosition() +
                 ", Title=" + getTitle() +  '}';
+    }
+
+    public int getNumOfCopies() {
+        return numOfCopies;
+    }
+
+    public void setNumOfCopies(int numOfCopies) {
+        this.numOfCopies = numOfCopies;
+    }
+
+    public String getCreatorId() {
+        return creatorId;
+    }
+
+    public void setCreatorId(String creatorId) {
+        this.creatorId = creatorId;
     }
 }
