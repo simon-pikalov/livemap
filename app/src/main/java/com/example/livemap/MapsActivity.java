@@ -180,15 +180,6 @@ GroupFragment.OnFragmentInteractionListener{
         mFireFunc= new FirebaseFunctionalities(mMap);
         mUser = mFireFunc.getCurrentUser();
 
-        // for testing purposes
-        User user1 = new User("bobby");
-        User user2 = new User("jimmy");
-        User user3 = new User("tom");
-
-        Group g1 = mUser.createGroup("group1 not empty");
-        g1.addUser(user1).addUser(user2).addUser(user3);
-        mUser.createGroup("group2");
-        mUser.createGroup("group3");
 
         //enableMyLocation();
     }

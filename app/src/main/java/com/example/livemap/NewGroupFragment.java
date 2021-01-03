@@ -62,6 +62,7 @@ public class NewGroupFragment extends Fragment {
                 String title = inputName.getText().toString();
                 String description = inputDescription.getText().toString();
                 Group newGroup = mUser.createGroup(title);
+                //
                 mUser.getFireFunc().addGroupToFirebase(newGroup);
                 mListener.newGroupComplete();
             }

@@ -1,5 +1,6 @@
 package com.example.livemap.objects;
 
+
 import android.util.Log;
 
 import com.example.livemap.utils.FirebaseFunctionalities;
@@ -22,15 +23,18 @@ public class User implements MarkerOwner {
     private HashMap<String, MarkerLive> markers;
     private HashMap<String, Group> groups;
     private HashMap<String, User> mapPals;
+    private double updateTrigger;
 
     //TODO make a class for all things general
     @Exclude
     public FirebaseFunctionalities getFireFunc(){return fireFunc;}
     // For restoration from Firebase
     public User(){
+//        Log.w("UserObject", "user object created");
         groups = new HashMap<>();
         markers = new HashMap<>();
         mapPals = new HashMap<>();
+        updateTrigger = Math.random();
     }
 
     public User(String name, String id) {
@@ -39,7 +43,7 @@ public class User implements MarkerOwner {
         this.name = name;
         this.id = id;
     }
-
+    public double getUpdateTrigger(){return updateTrigger;}
     //fake user, used for testing only
     public User(String name){
         this(name, UUID.randomUUID().toString());
@@ -75,7 +79,7 @@ public class User implements MarkerOwner {
 
     // create and join group
     public Group createGroup(String groupName){
-        return new Group(userClassKey, fireFunc,this,this, groupName);
+        return new Group(userClassKey,this,this.getId(), groupName);
     }
 
     public void joinGroup(Group g){
@@ -87,14 +91,27 @@ public class User implements MarkerOwner {
     }
 
     public boolean isPalsWith(String pal){return mapPals.containsKey(pal);}
-    public User getPal(String id){return mapPals.get(id);}
-    public void addPal(User pal){ mapPals.put(pal.getId(),pal);}
+    public User getPal(String id){
+        if(this.id == id){
+            return this;
+        }
+        return mapPals.get(id);
+    }
+    public void addPal(User pal){
+        Log.w("UserObject", "added pal"+pal.toString()+"to user");
+        mapPals.put(pal.getId(),pal);
+    }
     public void removePal(User pal){
         mapPals.remove(pal.getId());
     }
 
     public boolean hasGroup(String groupId){return groups.containsKey(groupId);}
-    public List<Group> getGroups(){return new ArrayList<>(groups.values());}
+    @Exclude
+    public List<Group> getGroups(){
+        ArrayList<Group> ret = new ArrayList<>(groups.values());
+//        Log.w("UserObject", "getGroups invoked, returning list: "+ret);
+        return ret;
+    }
     public Group getGroupById(String id){return groups.get(id);}
 
     public boolean isAdmin() {

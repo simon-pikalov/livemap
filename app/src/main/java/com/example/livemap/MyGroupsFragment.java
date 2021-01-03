@@ -101,7 +101,8 @@ public class MyGroupsFragment extends Fragment implements GroupListAdapter.OnIte
         exitGroupButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mSelectedGroup.removeUser(mUser);
+                //mSelectedGroup.removeUser(mUser);
+                mUser.getFireFunc().removeUserFromGroup(mUser.getId(),mSelectedGroup.getId());
                 // keep group list synced
                 mGroupList.remove(mSelectedGroup);
                 mAdapter.notifyDataSetChanged();

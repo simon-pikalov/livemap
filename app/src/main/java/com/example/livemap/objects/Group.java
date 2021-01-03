@@ -1,5 +1,7 @@
 package com.example.livemap.objects;
 
+import android.util.Log;
+
 import com.example.livemap.utils.FirebaseFunctionalities;
 import com.example.livemap.utils.MarkerOwner;
 import com.google.firebase.database.Exclude;
@@ -23,47 +25,59 @@ public class Group implements MarkerOwner {
     private static final Group.KeyClass groupClassKey = new Group.KeyClass();
 
     // for serialization in Firebase
-    public Group(){}
+    public Group(){
+        users=new HashMap<>();
+        markers=new HashMap<>();
+    }
     // group is created using admin user
-    public Group(User.KeyClass k, FirebaseFunctionalities FireFunc, User currentUser, User admin, String n){
+    public Group(User.KeyClass k, User currentUser, String adminId, String name){
+        if(currentUser==null) throw new NullPointerException("tried to create group with current user == null");
         users = new HashMap<>();
-        users.put(admin.getId(), admin.getId());
-        adminId = admin.getId();
-        name = n;
+        this.adminId = adminId;
+        this.name = name;
+
+        //should be done manually when restoring
+        this.currentUser =currentUser;
+
+        // note that id is generated randomly
         id = UUID.randomUUID().toString();
 
-        //Sould be done through firebase
-        //admin.joinGroup(this);
-        this.currentUser = currentUser;
     }
+    //IMPORTANT: must set current user after restoring from DB
+    @Exclude
+    public void setCurrentUser(User cUser){currentUser=cUser;}
 
-    public Group addUser(User u){
-        users.put(u.getId(), u.getId());
-        u.joinGroup( this);
+    //TODO clean up after separating current user and session related data
+
+    public Group addUser(String userId){
+        if(userId==currentUser.getId()){
+            currentUser.joinGroup(this);
+        }
+        users.put(userId, userId);
         return this;
     }
-
-    public Group removeUser(User u){
-        users.remove(u.getId());
-        u.exitGroup(this);
+    public Group removeUser(String userId){
+        if(userId==currentUser.getId()){
+            currentUser.exitGroup(this);
+        }
+        users.remove(userId);
         return this;
     }
     public boolean hasUser(String uid){return users.containsKey(uid);}
 
     @Exclude
+    // users are stores in user object, get them using their ids
     public List<User> getUsersList(){
-        if(users==null){
-            throw new NullPointerException("group's users not properly loaded from database");
-        }
         LinkedList<User> userObjects= new LinkedList<>();
+        Log.w("GroupObject","attempting to get users for ids: "+users.values());
         for(String userId: users.values()){
             User userObject = currentUser.getPal(userId);
-            if(userObject!=null)userObjects.add(userObject);
-            else throw new RuntimeException("Group: user in group, but not in list of users");
-
+            if(userObject!=null) userObjects.add(userObject);
+            else throw new RuntimeException("Group: user in group not loaded properly");
         }
         return  userObjects;
     }
+    @Exclude
     public List<String> getUserIdList(){return new ArrayList<>(users.values());}
 
     public String getId(){return id;}
@@ -73,6 +87,8 @@ public class Group implements MarkerOwner {
     public String toString(){
         return "{name: "+name +","+"id: "+id+"}";
     }
+    public String getAdminId(){return adminId;}
+    public void setAdminId(String id){adminId=id;}
 
 
     @Override

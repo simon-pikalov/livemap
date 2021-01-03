@@ -6,12 +6,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.livemap.objects.Group;
 import com.example.livemap.objects.User;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.List;
 
@@ -20,14 +22,18 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.GroupV
     private LayoutInflater mInflater;
     private final Button mRemoveUserButton;
     private User mSelectedUser;
+    private User mCurrentUser;
     private Group mGroup;
+    private Context mContext;
 
-    public UserListAdapter(Context context, Group group, Button rub) {
+    public UserListAdapter(Context context,User currentUser, Group group, Button rub) {
 
         mInflater = LayoutInflater.from(context);
         mUserList = group.getUsersList();
         mRemoveUserButton = rub;
-        mGroup = group;
+        mCurrentUser=currentUser;
+        mGroup=group;
+        mContext = context;
     }
 
 
@@ -54,9 +60,11 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.GroupV
             mRemoveUserButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    mGroup.removeUser(mSelectedUser);
+                    //mSelectedUser user cant be  mCurrentUser
+                    mCurrentUser.getFireFunc().removeUserFromGroup(mSelectedUser.getId(),mGroup.getId());
                     mUserList.remove(mSelectedUser);
                     mAdapter.notifyDataSetChanged();
+
                 }
             });
         }
@@ -67,7 +75,15 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.GroupV
             int mPosition = getLayoutPosition();
             // Use that to access the affected item in mWordList.
             mSelectedUser = mUserList.get(mPosition);
-            mRemoveUserButton.setVisibility(View.VISIBLE);
+            //TODO move group admin check from device to firebase
+
+            // show remove button only if user is admin and did not select himslef
+            if(mCurrentUser.getId()==mGroup.getAdminId() && mCurrentUser.getId()!=mSelectedUser.getId()){
+                mRemoveUserButton.setVisibility(View.VISIBLE);
+            }
+            else{
+                mRemoveUserButton.setVisibility(View.INVISIBLE);
+            }
 
         }
 

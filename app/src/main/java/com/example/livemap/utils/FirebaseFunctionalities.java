@@ -16,8 +16,10 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
@@ -32,13 +34,13 @@ public class FirebaseFunctionalities {
 
     private final String USERS_PATH = "/users/";
     private final String GROUPS_PATH = "/groups/";
+    private final String MESSAGE_BOX = "/message_box/";
     //this path contains for every user and for every group its members and groups he is in, respectively
     private final String GROUP_USER_RELATION_PATH = "/group_user/";
     private final String MARKERS_PATH = "/markers/";
 
     public FirebaseFunctionalities(GoogleMap map){
         mMap=map;
-
         mDatabase=FirebaseDatabase.getInstance();
         mGroupsNode = mDatabase.getReference(GROUPS_PATH);
         mUsersNode = mDatabase.getReference(USERS_PATH);
@@ -51,14 +53,10 @@ public class FirebaseFunctionalities {
 
         setListenerForCurrentUser();
 
-        // TODO fix issue with loading user drom db
-        // if this user has no entry in database, create it
-
-
 
 //      code below needs user to not be null (taken care of in setListenerForCurrentUser();)
         mUser.attachFirebaseFuntionalities(this);
-        addListenerForCurrentUserGroups();
+        addListenerForGroupsOfCurrentUser();
 
         mUserMarkersNode = mDatabase.getReference(MARKERS_PATH+ mUser.getId()+"/");
 
@@ -67,48 +65,74 @@ public class FirebaseFunctionalities {
     }
 
     private void setListenerForCurrentUser(){
+        // TODO fix issue with loading user drom db
         String uid = FirebaseAuth.getInstance().getUid();
         Log.w("JonFirebase", "user Id is: "+uid);
         //Try to get this user from firebase
         DatabaseReference refToThisUser = mUsersNode.child(uid);
-        Log.w("JonFirebase", "got reference: "+refToThisUser);
-        refToThisUser.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot snapshot) {
-                Log.w("JonFirebase", "tried to get user from db: "+snapshot);
-                mUser = snapshot.getValue(User.class);
-                if(mUser!=null){
-                    Log.w("JonFirebase", "successfuly restored user: "+mUser.toString());
-                }
-            }
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Log.w("JonFirebase", error.getMessage());
-            }
-        });
+//        Log.w("JonFirebase", "got reference: "+refToThisUser);
+//        refToThisUser.addValueEventListener(new ValueEventListener() {
+//            @Override
+//            public void onDataChange(DataSnapshot snapshot) {
+//                Log.w("JonFirebase", "tried to get user from db: "+snapshot);
+//                mUser = snapshot.getValue(User.class);
+//                if(mUser!=null){
+//                    Log.w("JonFirebase", "successfuly restored user: "+mUser.toString());
+//                }
+//            }
+//            @Override
+//            public void onCancelled(@NonNull DatabaseError error) {
+//                Log.w("JonFirebase", error.getMessage());
+//            }
+//        });
 
         if(mUser==null){
             Log.w("JonFirebase", "creating new user");
-            mUser=new User("Jonny", uid);
+            mUser=new User("Jonny", uid,"0502253227");
             refToThisUser.setValue(mUser);
         }
 
+
+        //add a couple test users
+        String[] names = {"Bob","Jim","Tommy"};
+        String[] phones = {"111","222","333"};
+        String[] ids = {"test3asdfd42","test123dsd2","test3sdf3233"};
+        DatabaseReference refToUser = mUsersNode;
+        for(int i=0; i<3;++i ){
+            refToUser.child(ids[i]).setValue(new User(names[i],ids[i],phones[i]));
+        }
+        // create a group for testing
+        Group group = mUser.createGroup("TestGroup1");
+        // otherwise id is random
+        group.setId("test12988412821");
+        addGroupToFirebase(group);
+        String groupId = group.getId();
+        //add users on group in firebase, but not on device
+        DatabaseReference groupUserRef = mGroupUserNode.child(groupId);
+        for(int i=0; i<3;++i ){
+            groupUserRef.child(ids[i]).setValue(1);
+        }
+        // add current user too
+        groupUserRef.child(mUser.getId()).setValue(1);
     }
 
-    private void addListenerForCurrentUserGroups(){
-        // this adds the ids of the groups a user is in, restore them if not already present
+
+
+    private void sendGroupInvitationByPhoneNumber(String phoneNumber){
+        Query userId = mDatabase.getReference(USERS_PATH).equalTo(phoneNumber);
+    }
+
+    // gets ids of user's groups and adds listeners for them
+    private void addListenerForGroupsOfCurrentUser(){
         DatabaseReference refToGroupUserRelation = mGroupUserNode.child(mUser.getId());
         refToGroupUserRelation.addChildEventListener(new ChildEventListener(){
             @Override
             public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-                String groupId = (String)snapshot.getValue(String.class);
-                if(groupId!="updateTrigger") {
-                    Log.w("JonFirebase", "Got snapshot: " + snapshot);
-                    Log.w("JonFirebase", "User restore - Got group  id: " + groupId);
-                    //if user doesn't have group, add it by setting listeners for it
-                    if (!mUser.hasGroup(groupId)) {
-                        setListenerForGroup(groupId);
-                    }
+                String groupId = (String)snapshot.getKey();
+                Log.w("JonFirebase", "setting listener for group with id: " + groupId);
+                //if user has not joined yet, add listener that will also join user to the group
+                if (!mUser.hasGroup(groupId)) {
+                    setListenerForGroup(groupId);
                 }
             }
 
@@ -119,7 +143,7 @@ public class FirebaseFunctionalities {
 
             @Override
             public void onChildRemoved(@NonNull DataSnapshot snapshot) {
-
+                Log.w("JonFirebase", "restore groups got group  id entered on child rmoved");
             }
 
             @Override
@@ -135,13 +159,15 @@ public class FirebaseFunctionalities {
     }
 
 
+
+
     private void setListenerForMarkers(){
         mUserMarkersNode.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-                Log.w("JonFirebase", "Got snapshot: " +snapshot);
+                //Log.w("JonFirebase", "Got snapshot: " +snapshot);
                 MarkerLive markerLive = (MarkerLive) snapshot.getValue(MarkerLive.class);
-                Log.w("JonFirebase", "Got markerLive: " + markerLive.toString());
+                //Log.w("JonFirebase", "Got markerLive: " + markerLive.toString());
                 //if it's a new marker, create it
                 if (!mUser.hasMarker(markerLive.getId())) {
                     markerLive.restoreOwner(mUser);
@@ -157,7 +183,7 @@ public class FirebaseFunctionalities {
             @Override
             public void onChildRemoved(@NonNull DataSnapshot snapshot) {
                 MarkerLive markerLive = (MarkerLive) snapshot.getValue(MarkerLive.class);
-                Log.w("JonFirebase", "Got markerLive: " + markerLive.toString());
+                //Log.w("JonFirebase", "Got markerLive: " + markerLive.toString());
                 //if it's a new marker, create it
                 if (mUser.hasMarker(markerLive.getId())) {
                     markerLive.restoreOwner(mUser);
@@ -180,30 +206,31 @@ public class FirebaseFunctionalities {
 
     }
 
-
+    // loads group and joins user to it
     private void setListenerForGroup(String groupId){
 
         // first a listener for the properties of the group: name, etc.
         mGroupsNode.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-                Log.w("JonFirebase", "onChildAdded Got group snapshot: " +snapshot);
+                //Log.w("JonFirebase", "onChildAdded Got group snapshot: " +snapshot);
                 Group group = (Group)snapshot.getValue(Group.class);
-                Log.w("JonFirebase", "Got group: " + group.toString());
-
+                Log.w("JonFirebase", "attempting restore of group from firebase: " + group.toString());
                 if (!mUser.hasGroup(group.getId())) {
-                    mUser.joinGroup(group);
+                    // order is important
+                    group.setCurrentUser(mUser);
+                    group.addUser(mUser.getId());
                 }
             }
             @Override
             public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-                Log.w("JonFirebase", "onChildChanged Got group snapshot: " +snapshot);
-                Group group = (Group)snapshot.getValue(Group.class);
-                Log.w("JonFirebase", "Got group: " + group.toString());
-                //if user was removed, then remove group from user's list of groups
-                if (mUser.hasGroup(group.getId())&&!group.hasUser(mUser.getId())) {
-                    mUser.exitGroup(group);
-                }
+//                Log.w("JonFirebase", "onChildChanged Got group snapshot: " +snapshot);
+//                Group group = (Group)snapshot.getValue(Group.class);
+//                Log.w("JonFirebase", "Got group: " + group.toString());
+//                //if user was removed, then remove group from user's list of groups
+//                if (mUser.hasGroup(group.getId())&&!group.hasUser(mUser.getId())) {
+//                    mUser.exitGroup(group);
+//                }
             }
 
             @Override
@@ -213,7 +240,7 @@ public class FirebaseFunctionalities {
                 Log.w("JonFirebase", "Got group: " + group.toString());
                 //if it's a new marker, create it
                 if (mUser.hasGroup(group.getId())) {
-                    mUser.exitGroup(group);
+                    group.removeUser(mUser.getId());
                 }
             }
 
@@ -258,6 +285,10 @@ public class FirebaseFunctionalities {
                     Marker marker = mMap.addMarker(markerLive.getMarkerOptions());
                     markerLive.attachMarker(marker);
                 }
+
+
+
+
             }
 
             @Override
@@ -271,19 +302,17 @@ public class FirebaseFunctionalities {
             }
 
         });
-        // listener for users of this group
-        DatabaseReference groupUsersNode = mDatabase.getReference(GROUP_USER_RELATION_PATH+groupId+"/");
-        groupMarkersNode.addChildEventListener(new ChildEventListener() {
+        //set listeners for users who are in the group
+        DatabaseReference refToGroupUserRelation = mGroupUserNode.child(groupId);
+        refToGroupUserRelation.addChildEventListener(new ChildEventListener(){
             @Override
             public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-                Group group = mUser.getGroupById(groupId);
-                Log.w("JonFirebase", "Got snapshot: " +snapshot);
-                String userId = (String) snapshot.getValue();
-                Log.w("JonFirebase", "Got group member id: " + userId);
-                //if it's a new marker, create it
-                if (!group.hasUser(userId)) {
-                    group.addUser(mUser.getPal(userId));
+                String userId = snapshot.getKey();
+                Log.w("JonFirebase", "adding listener for group user (if needed): " + userId);
+                if(userId!=mUser.getId()){
+                    addListenerForGroupUser(userId);
                 }
+                mUser.getGroupById(groupId).addUser(userId);
             }
             @Override
             public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
@@ -292,14 +321,9 @@ public class FirebaseFunctionalities {
 
             @Override
             public void onChildRemoved(@NonNull DataSnapshot snapshot) {
-//                MarkerLive markerLive = (MarkerLive) snapshot.getValue(MarkerLive.class);
-//                Log.w("JonFirebase", "Got markerLive: " + markerLive.toString());
-//                //if it's a new marker, create it
-//                if (mUser.hasMarker(markerLive.getId())) {
-//                    markerLive.restoreOwner(mUser);
-//                    Marker marker = mMap.addMarker(markerLive.getMarkerOptions());
-//                    markerLive.attachMarker(marker);
-//                }
+                Log.w("JonFirebase", "attempting to remove user from group");
+                String removedUser = snapshot.getKey();
+                mUser.getGroupById(groupId).removeUser(removedUser);
             }
 
             @Override
@@ -311,16 +335,23 @@ public class FirebaseFunctionalities {
             public void onCancelled(@NonNull DatabaseError error) {
 
             }
-
         });
     }
+    //TODO finish1
 
-    public void setUserListener(String id){
-        DatabaseReference ref = mUsersNode.child(id);
-        ref.addValueEventListener(new ValueEventListener() {
+    // listen to a single user who is in given group
+    private void addListenerForGroupUser(String userId){
+        DatabaseReference refToUser = mUsersNode.child(userId);
+        refToUser.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-
+                Log.w("JonFirebase","attempting user restore from snapshot: "+snapshot);
+                User user = snapshot.getValue(User.class);
+                // TODO update user listener for getting updates
+                // check if user is already stored on deivce
+                if(!mUser.isPalsWith(user.getId())){
+                    mUser.addPal(user);
+                }
             }
 
             @Override
@@ -330,10 +361,6 @@ public class FirebaseFunctionalities {
         });
     }
 
-    public User getCurrentUser(){
-        if(mUser==null)throw new NullPointerException("user was not created before attemting to get it");
-        return mUser;
-    }
 
 
 
@@ -360,37 +387,30 @@ public class FirebaseFunctionalities {
 
     // used only when creating a group
     public void addGroupToFirebase(Group group){
-        // get reference to path of current group and set value
+        Log.w("JonFirebase", "adding group to firebase");
+        //add group id to users list of groups
+        DatabaseReference groupsRefUser = mGroupUserNode.child(mUser.getId());
+        groupsRefUser. child(group.getId()).setValue(1);
+
+        // set value of group and its user relations
         DatabaseReference markerRef = mGroupsNode.child(group.getId());
         markerRef.setValue(group);
         //upload all users of this group to database
-        DatabaseReference usersRef = mGroupUserNode.child(group.getId());
+        DatabaseReference usersRefGroup = mGroupUserNode.child(group.getId());
         for(String uid: group.getUserIdList()){
-            usersRef.setValue(uid);
+            usersRefGroup.child(uid).setValue(1);
         }
-        //add listener for this group, its markers and its users
-        setListenerForGroup(group.getId());
     }
 
 
+    public void removeUserFromGroup(String userId, String groupId){
+        mGroupUserNode.child(groupId).child(userId).removeValue();
+    }
 
+    // gets user after restoring him from firebase
+    public User getCurrentUser(){
+        if(mUser==null)throw new NullPointerException("user was not created before attemting to get it");
+        return mUser;
+    }
 
-//    public void attachUserListener(String id){
-//
-//        // get reference to user path and listen for changes
-//        DatabaseReference userRef = FirebaseDatabase.gchild(USERS_PATH).child(id);
-//        userRef.addValueEventListener(new ValueEventListener(){
-//
-//                    @Override
-//                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-//
-//                    }
-//
-//                    @Override
-//                    public void onCancelled(@NonNull DatabaseError error) {
-//
-//                    }
-//                });
-//
-//    }
 }
