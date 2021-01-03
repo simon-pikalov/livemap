@@ -67,7 +67,7 @@ public class GroupFragment extends Fragment {
         // Get a handle to the RecyclerView.
         mRecyclerView = rootView.findViewById(R.id.users_recycler_view);
         // Create an adapter and supply the data to be displayed.
-        mAdapter = new UserListAdapter(getContext(),mUser, mGroup,removeUserButton);
+        mAdapter = new UserListAdapter(getContext(),mUser, mGroup,removeUserButton,inviteButton);
         // Connect the adapter with the RecyclerView.
         mRecyclerView.setAdapter(mAdapter);
         // Give the RecyclerView a default layout manager.

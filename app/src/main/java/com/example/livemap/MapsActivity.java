@@ -1,6 +1,7 @@
 package com.example.livemap;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -8,6 +9,7 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import android.Manifest;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
@@ -18,6 +20,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Switch;
 import android.widget.Toast;
 
@@ -47,7 +50,7 @@ import com.google.android.gms.location.LocationServices;
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback
         , MarkerInfoFragment.OnFragmentInteractionListener, NewMarkerFragment.OnFragmentInteractionListener,
 NewGroupFragment.OnFragmentInteractionListener, MyGroupsFragment.OnFragmentInteractionListener,
-GroupFragment.OnFragmentInteractionListener{
+GroupFragment.OnFragmentInteractionListener, FirebaseFunctionalities.FirebaseInteractionListener{
 
     private static final int REQUEST_LOCATION_PERMISSION = 1;
     private static final int MARKER_IS_PRIVATE= 1;
@@ -177,7 +180,7 @@ GroupFragment.OnFragmentInteractionListener{
         setMapClicks(mMap);
 
         String userId = FirebaseAuth.getInstance().getUid();
-        mFireFunc= new FirebaseFunctionalities(mMap);
+        mFireFunc= new FirebaseFunctionalities(this,mMap);
         mUser = mFireFunc.getCurrentUser();
 
 
@@ -405,6 +408,39 @@ GroupFragment.OnFragmentInteractionListener{
     public void groupFragmentComplete() { closeGroupFragment(); }
 
 
+    @Override
+    public void receiveGroupJoinInvitation(MessageLive messageLive) {
+        //TODO make message box (maybe chat etc,)
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+        // Set a title for alert dialog
+        builder.setTitle("Group Invitation");
+
+        // Ask the final question
+        builder.setMessage("You have been invited by "+messageLive.getSenderName()
+                +" to join the group \""+messageLive.getGroupName()
+        +"\", do you wish to accept?");
+
+        // Set the alert dialog yes button click listener
+        builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                mFireFunc.joinGroup(messageLive.getGroupId());
+            }
+        });
+
+        // Set the alert dialog no button click listener
+        builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                Toast.makeText(getApplicationContext(),
+                        "Refused",Toast.LENGTH_SHORT).show();
+            }
+        });
+        AlertDialog dialog = builder.create();
+        // Display the alert dialog
+        dialog.show();
+    }
 
     //////////////FRAGMENT OPENERS AND CLOSERS////////////////////
     //TODO make one function for all fragment openers
@@ -550,6 +586,7 @@ GroupFragment.OnFragmentInteractionListener{
             fragmentTransaction.remove(groupFragment).commit();
         }
     }
+
     //////////////FRAGMENT OPENERS AND CLOSERS END////////////////////
 }
 

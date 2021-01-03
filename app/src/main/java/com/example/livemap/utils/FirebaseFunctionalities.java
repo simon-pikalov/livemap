@@ -1,5 +1,6 @@
 package com.example.livemap.utils;
 
+import android.content.Context;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -7,6 +8,7 @@ import androidx.annotation.Nullable;
 
 import com.example.livemap.objects.Group;
 import com.example.livemap.objects.MarkerLive;
+import com.example.livemap.objects.MessageLive;
 import com.example.livemap.objects.User;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.Marker;
@@ -31,6 +33,12 @@ public class FirebaseFunctionalities {
     private DatabaseReference mGroupsNode;
     private DatabaseReference mUsersNode;
     private DatabaseReference mGroupUserNode;
+    private DatabaseReference mMessagesNode;
+    private FirebaseInteractionListener mListener;
+    //interface to delegate instructions to main activity
+    public interface FirebaseInteractionListener{
+        void receiveGroupJoinInvitation(MessageLive message);
+    }
 
     private final String USERS_PATH = "/users/";
     private final String GROUPS_PATH = "/groups/";
@@ -39,13 +47,14 @@ public class FirebaseFunctionalities {
     private final String GROUP_USER_RELATION_PATH = "/group_user/";
     private final String MARKERS_PATH = "/markers/";
 
-    public FirebaseFunctionalities(GoogleMap map){
+    public FirebaseFunctionalities(Context context,GoogleMap map){
         mMap=map;
+        mListener = (FirebaseInteractionListener)context;
         mDatabase=FirebaseDatabase.getInstance();
         mGroupsNode = mDatabase.getReference(GROUPS_PATH);
         mUsersNode = mDatabase.getReference(USERS_PATH);
         mGroupUserNode = mDatabase.getReference(GROUP_USER_RELATION_PATH);
-
+        mMessagesNode = mDatabase.getReference(MESSAGE_BOX);
 
 
         String uid = FirebaseAuth.getInstance().getUid();
@@ -57,7 +66,7 @@ public class FirebaseFunctionalities {
 //      code below needs user to not be null (taken care of in setListenerForCurrentUser();)
         mUser.attachFirebaseFuntionalities(this);
         addListenerForGroupsOfCurrentUser();
-
+        addMessageListener();
         mUserMarkersNode = mDatabase.getReference(MARKERS_PATH+ mUser.getId()+"/");
 
         setListenerForMarkers();
@@ -92,28 +101,45 @@ public class FirebaseFunctionalities {
             refToThisUser.setValue(mUser);
         }
 
-
+        /////////////TEST DATA START/////////////////////////
         //add a couple test users
         String[] names = {"Bob","Jim","Tommy"};
         String[] phones = {"111","222","333"};
         String[] ids = {"test3asdfd42","test123dsd2","test3sdf3233"};
+        LinkedList<User> usersTest = new LinkedList<>();
+        for(int i=0; i<3;++i ){
+            usersTest.add(new User(names[i],ids[i],phones[i]));
+        }
+
         DatabaseReference refToUser = mUsersNode;
         for(int i=0; i<3;++i ){
-            refToUser.child(ids[i]).setValue(new User(names[i],ids[i],phones[i]));
+            refToUser.child(ids[i]).setValue(usersTest.get(i));
         }
         // create a group for testing
-        Group group = mUser.createGroup("TestGroup1");
+        Group group1 = mUser.createGroup("TestGroup1");
         // otherwise id is random
-        group.setId("test12988412821");
-        addGroupToFirebase(group);
-        String groupId = group.getId();
+        group1.setId("test12988412821");
+        addGroupToFirebase(group1);
         //add users on group in firebase, but not on device
-        DatabaseReference groupUserRef = mGroupUserNode.child(groupId);
+        DatabaseReference groupUserRef = mGroupUserNode.child(group1.getId());
         for(int i=0; i<3;++i ){
             groupUserRef.child(ids[i]).setValue(1);
         }
         // add current user too
-        groupUserRef.child(mUser.getId()).setValue(1);
+        mGroupUserNode.child(mUser.getId()).child(group1.getId()).setValue(1);
+
+
+        // do the same but don't add user this time, send invitation instead
+        Group group2 = mUser.createGroup("TestGroupWithMessage");
+
+        // otherwise id is random
+        group2.setId("test1292352321");
+        Log.w("JonFirebase", "adding group to firebase");
+        //add group id to users list of groups
+        DatabaseReference groupsRefUser = mGroupUserNode.child(mUser.getId());
+
+        /////////////TEST END/////////////////////////
+
     }
 
 
@@ -143,7 +169,7 @@ public class FirebaseFunctionalities {
 
             @Override
             public void onChildRemoved(@NonNull DataSnapshot snapshot) {
-                Log.w("JonFirebase", "restore groups got group  id entered on child rmoved");
+                Log.w("JonFirebase", "restore groups got group  id entered on child removed");
             }
 
             @Override
@@ -361,6 +387,40 @@ public class FirebaseFunctionalities {
         });
     }
 
+    private void addMessageListener(){
+        DatabaseReference ref = mMessagesNode.child(mUser.getId());
+        ref.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+                MessageLive receivedMessage = snapshot.getValue(MessageLive.class);
+                //delegate response to main activity
+                mListener.receiveGroupJoinInvitation(receivedMessage);
+                // clean up
+                ref.child(snapshot.getKey()).removeValue();
+            }
+
+            @Override
+            public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+
+            }
+
+            @Override
+            public void onChildRemoved(@NonNull DataSnapshot snapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+    }
+
 
 
 
@@ -402,9 +462,16 @@ public class FirebaseFunctionalities {
         }
     }
 
-
+    // just adds the group to the relations, listeners will take care of the rest
+    public void joinGroup(String groupId){
+        mGroupUserNode.child(mUser.getId()).child(groupId).setValue(groupId);
+    }
     public void removeUserFromGroup(String userId, String groupId){
         mGroupUserNode.child(groupId).child(userId).removeValue();
+    }
+    public void sendGroupInvitation(String userId, Group group){
+        MessageLive msg = new MessageLive(mUser, group);
+        mMessagesNode.child(userId).child(msg.getId()).setValue(msg);
     }
 
     // gets user after restoring him from firebase
