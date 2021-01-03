@@ -72,6 +72,8 @@ public class MyGroupsFragment extends Fragment implements GroupListAdapter.OnIte
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                                         Bundle savedInstanceState) {
         mGroupList = mUser.getGroups();
+        Log.w("MyGroupsFrag", "user is: "+mUser);
+        Log.w("MyGroupsFrag", "got groups: "+mGroupList);
 
         // Inflate the layout for this fragment.
         final View rootView = inflater.inflate(R.layout.fragment_my_groups,

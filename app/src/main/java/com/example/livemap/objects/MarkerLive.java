@@ -1,6 +1,8 @@
 package com.example.livemap.objects;
 
 
+import android.util.Log;
+
 import com.example.livemap.utils.LatLngLive;
 import com.example.livemap.utils.MarkerOwner;
 import com.google.android.gms.maps.model.BitmapDescriptor;
@@ -64,7 +66,8 @@ public class MarkerLive  {
 
     // attach marker to user or group after restoring from database
     public void restoreOwner(User user){
-        if(ownerId==user.getId()){
+        //Log.w("MarkerLive", "restore owner: markerownerId is: "+ownerId+"user id is: "+user.getId());
+        if(ownerId.equals(user.getId())){
             owner = user;
         }
         else {

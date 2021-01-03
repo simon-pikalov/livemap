@@ -1,11 +1,14 @@
 package com.example.livemap.objects;
 
+import android.util.Log;
+
 import com.example.livemap.utils.FirebaseFunctionalities;
 import com.example.livemap.utils.MarkerOwner;
 import com.google.firebase.database.Exclude;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 
@@ -24,15 +27,17 @@ public class User implements MarkerOwner {
     @Exclude
     public FirebaseFunctionalities getFireFunc(){return fireFunc;}
     // For restoration from Firebase
-    public User(){}
+    public User(){
+        groups = new HashMap<>();
+        markers = new HashMap<>();
+        mapPals = new HashMap<>();
+    }
 
     public User(String name, String id) {
+        this();
         this.isAdmin = false;
         this.name = name;
         this.id = id;
-        markers = new HashMap<>();
-        groups = new HashMap<>();
-        mapPals = new HashMap<>();
     }
 
     //fake user, used for testing only
@@ -74,6 +79,7 @@ public class User implements MarkerOwner {
     }
 
     public void joinGroup(Group g){
+        Log.w("UserObject", "added group"+g.toString()+"to user");
         groups.put(g.getId(),g);
     }
     public void exitGroup(Group g){
@@ -87,8 +93,8 @@ public class User implements MarkerOwner {
         mapPals.remove(pal.getId());
     }
 
-    public boolean hasGroup(Group group){return groups.containsKey(group.getId());}
-    public List<Group> getGroups(){return new ArrayList<Group>(groups.values());}
+    public boolean hasGroup(String groupId){return groups.containsKey(groupId);}
+    public List<Group> getGroups(){return new ArrayList<>(groups.values());}
     public Group getGroupById(String id){return groups.get(id);}
 
     public boolean isAdmin() {
@@ -118,7 +124,7 @@ public class User implements MarkerOwner {
 
     @Override
     public String toString() {
-        return "User{" +
+        return "User{name=" +name+", "+
                 "ID='" + id + '\'' +
                 ", isAdmin=" + isAdmin +
                 '}';
