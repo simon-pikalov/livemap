@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.provider.ContactsContract;
@@ -22,6 +23,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
 public class FindUserActivity extends AppCompatActivity {
@@ -61,11 +63,18 @@ public class FindUserActivity extends AppCompatActivity {
 
     private void createGroup(){
         Boolean validChat = false;
+        ArrayList<String> userIds = new ArrayList<>();
         for(User mUser : usertListMatched){
             if(mUser.isSelected()){
                 validChat = true;
+                userIds.add(mUser.getId());
             }
         }
+//        Log.w("JonReturnToMain", "got user list: "+userIds);
+        Intent intent = new Intent();
+        intent.putExtra("userList", (Serializable) userIds);
+        setResult(RESULT_OK, intent);
+        finish();
 
         if(validChat){
 
@@ -103,7 +112,7 @@ public class FindUserActivity extends AppCompatActivity {
                         String name = d.child("name").getValue(String.class);
                         String phone = d.child("phone").getValue(String.class);
                         if (!String.valueOf(phone.charAt(0)).equals("+"))  phone= isoPrefix+phone.substring(1);
-                        String id = d.child("name").getValue(String.class);
+                        String id = d.child("id").getValue(String.class);
                         User u = new User(name,id,phone);
                         Log.i("User",u.toString());
                         fireList.add(u);

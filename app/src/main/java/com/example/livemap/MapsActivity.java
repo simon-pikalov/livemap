@@ -1,6 +1,7 @@
 package com.example.livemap;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -46,7 +47,9 @@ import android.location.Location;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback
@@ -57,6 +60,7 @@ GroupFragment.OnFragmentInteractionListener, FirebaseFunctionalities.FirebaseInt
     private static final int REQUEST_LOCATION_PERMISSION = 1;
     private static final int MARKER_IS_PRIVATE= 1;
     private static final String DEFAULT_TITLE = "Unnamed Marker";
+    private static final int SELECTED_USER_LIST_CODE = 12798;
     private GoogleMap mMap;
     private User mUser;
     private MacActions currAction;
@@ -120,6 +124,21 @@ GroupFragment.OnFragmentInteractionListener, FirebaseFunctionalities.FirebaseInt
         return super.onCreateOptionsMenu(menu);
 
     }
+
+    @Override
+    // gets result from find user activity
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(requestCode == SELECTED_USER_LIST_CODE){
+            if(resultCode == RESULT_OK){
+                ArrayList<String> userIds = (ArrayList<String>)data.getSerializableExtra("userList");
+                Log.w("JonReturnToMain", "got user list: "+userIds);
+
+                //TODO
+            }
+        }
+    }
+
     public boolean onOptionsItemSelected(MenuItem item) {
         // Change the map type based on the user's selection.
         switch (item.getItemId()) {
@@ -128,12 +147,14 @@ GroupFragment.OnFragmentInteractionListener, FirebaseFunctionalities.FirebaseInt
                 openNewGroupFragment(mUser);
                 return true;
             case R.id.manu_item_main_menu_my_groups:
-                openMyGroupsFragment(mUser);
+                openMyGroupsFragment(mUser,null);
                 return true;
             case R.id.menu_item_main_menu_my_contacts:
                 Intent intent = new Intent(getApplicationContext(),FindUserActivity.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                startActivity(intent);
+                startActivityForResult(intent, SELECTED_USER_LIST_CODE);
+
+
                 return true;
             case R.id.app_bar_switch:
                 // change checked state
@@ -533,10 +554,10 @@ GroupFragment.OnFragmentInteractionListener, FirebaseFunctionalities.FirebaseInt
         }
     }
 
-    private void openMyGroupsFragment (User u){
+    private void openMyGroupsFragment (User u, List<String > usersToAdd){
         // Instantiate the fragment.
         MyGroupsFragment myGroupsFragment =
-                com.example.livemap.MyGroupsFragment.newInstance(u);
+                com.example.livemap.MyGroupsFragment.newInstance(u, usersToAdd);
         // Get the FragmentManager and start a transaction.
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager

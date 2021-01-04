@@ -47,6 +47,7 @@ public class MyGroupsFragment extends Fragment implements GroupListAdapter.OnIte
     private Button viewGroupButton;
     private Button closeButton;
     private Button exitGroupButton;
+    private static List<String> mUsersToAdd;
 
     public MyGroupsFragment() {
         // Required empty public constructor
@@ -114,6 +115,12 @@ public class MyGroupsFragment extends Fragment implements GroupListAdapter.OnIte
             @Override
             public void onClick(View view) {
                 if(mSelectedGroup != null){
+                    //adding users to group
+                    if(mUsersToAdd!= null){
+                        for(String uid: mUsersToAdd){
+                            mUser.getFireFunc().sendGroupInvitation(uid, mSelectedGroup);
+                        }
+                    }
                     mListener.myGroupsFragmentToGroupFragment(mSelectedGroup);
                 }
             }
@@ -130,9 +137,10 @@ public class MyGroupsFragment extends Fragment implements GroupListAdapter.OnIte
         // Return the View for the fragment's UI.
         return rootView;
     }
-    // marker can be null
-    public static MyGroupsFragment newInstance(User u) {
+    // users to add can be null
+    public static MyGroupsFragment newInstance(User u, List<String> usersToAdd) {
         mUser = u;
+        mUsersToAdd = usersToAdd;
         return new MyGroupsFragment();
 
     }
