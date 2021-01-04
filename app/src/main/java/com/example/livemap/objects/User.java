@@ -78,7 +78,10 @@ public class User implements MarkerOwner {
         return false;
     }
     public void addMarkerLive(MarkerLive ml){markers.put(ml.getId(), ml);}
-    public void removeMarkerLive(MarkerLive ml){markers.remove(ml.getId());}
+    public void removeMarkerLive(MarkerLive ml){
+        markers.get(ml.getId()).getMarker().remove();
+        markers.remove(ml.getId());
+    }
 
     public String getId() {
         return id;

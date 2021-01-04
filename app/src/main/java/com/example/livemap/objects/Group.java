@@ -94,5 +94,15 @@ public class Group implements MarkerOwner {
     @Override
     public void addMarkerLive(MarkerLive ml){markers.put(ml.getId(), ml);}
     @Override
-    public void removeMarkerLive(MarkerLive ml){markers.remove(ml.getId());}
+    public void removeMarkerLive(MarkerLive ml){
+        MarkerLive marker = markers.get(ml.getId());
+        if(marker != null){
+            marker.getMarker().remove();
+            markers.remove(marker.getId());
+        }
+        else{
+            throw new NullPointerException("failed to remove group marker, cant find in map, id is:"+ ml.getId());
+        }
+
+    }
 }

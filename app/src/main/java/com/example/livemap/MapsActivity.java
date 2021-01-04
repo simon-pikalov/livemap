@@ -404,7 +404,7 @@ GroupFragment.OnFragmentInteractionListener, FirebaseFunctionalities.FirebaseInt
     @Override
     public void markerInfoCompleteDelete(MarkerLive ml) {
         mFireFunc.removeMarkerFromFirebase(ml);
-        ml.removeAndCleanup();
+//        ml.removeAndCleanup();
         closeMarkerInfoWindow ();
     }
 

@@ -73,10 +73,15 @@ public class MarkerLive  {
         if(ownerId.equals(user.getId())){
             owner = user;
         }
+        //owner is a group
         else {
             Group group = user.getGroupById(ownerId);
-            Log.w("MarkerLive", "attempting to restore owner: "+ownerId+", available are: "+user.getGroups());
-            if (group != null) owner=group;
+            Log.w("MarkerLive", "attempting to restore owner: "+ownerId+
+                    ", available are: "+user.getGroups()+ " marker id is"+id);
+            if (group != null) {
+                owner = group;
+                group.addMarkerLive(this);
+            }
             else throw new RuntimeException("attempted to restore a marker without existing owner");
         }
     }
@@ -158,6 +163,7 @@ public class MarkerLive  {
     public String getId() {
         return id;
     }
+    public void setId(String id){this.id=id;}
 
     @Exclude
     public MarkerOwner getOwner() {

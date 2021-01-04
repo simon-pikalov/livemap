@@ -271,7 +271,12 @@ public class FirebaseFunctionalities {
 
             @Override
             public void onChildRemoved(@NonNull DataSnapshot snapshot) {
-                // not relevant
+                MarkerLive markerLive = (MarkerLive) snapshot.getValue(MarkerLive.class);
+                //Log.w("JonFirebase", "Got markerLive: " + markerLive.toString());
+
+                if (mUser.hasMarker(markerLive.getId())) {
+                    mUser.removeMarkerLive(markerLive);
+                }
             }
 
             @Override
@@ -362,11 +367,10 @@ public class FirebaseFunctionalities {
             @Override
             public void onChildRemoved(@NonNull DataSnapshot snapshot) {
                 MarkerLive markerLive = (MarkerLive) snapshot.getValue(MarkerLive.class);
-                Log.w("JonFirebase", "Got group marker: " + markerLive.toString());
+                Log.w("JonFirebase", "trying to remove marker: " + markerLive.toString());
                 //if it's a new marker, create it
-                if (mUser.hasMarker(markerLive.getId())) {
-                    markerLive.removeAndCleanup();
-                }
+                mUser.getGroupById(markerLive.getOwnerId()).removeMarkerLive(markerLive);
+
 
 
             }
