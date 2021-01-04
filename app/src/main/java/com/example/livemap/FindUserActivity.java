@@ -23,7 +23,6 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 public class FindUserActivity extends AppCompatActivity {
     private RecyclerView mUserList;
@@ -47,7 +46,7 @@ public class FindUserActivity extends AppCompatActivity {
         mCreatChat.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                createChat();
+                createGroup();
             }
         });
         initializeRecyclerView();
@@ -60,9 +59,9 @@ public class FindUserActivity extends AppCompatActivity {
     }
 
 
-    private void createChat(){
+    private void createGroup(){
         Boolean validChat = false;
-        for(User mUser : usertList){
+        for(User mUser : usertListMatched){
             if(mUser.isSelected()){
                 validChat = true;
             }
