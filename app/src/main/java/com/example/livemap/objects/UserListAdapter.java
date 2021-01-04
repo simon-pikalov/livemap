@@ -3,6 +3,8 @@ package com.example.livemap.objects;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -17,7 +19,6 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.UserLi
     private  ArrayList<User> userList;
 
     public UserListAdapter(ArrayList<User> userList) {
-
         this.userList = userList;
     }
 
@@ -35,6 +36,12 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.UserLi
     public void onBindViewHolder(@NonNull UserListViewHolder holder, int position) {
     holder.mName.setText(userList.get(position).getName());
     holder.mPhone.setText(userList.get(position).getPhone());
+    holder.mAdd.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        @Override
+        public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+            userList.get(holder.getAdapterPosition()).setSelected(b);
+        }
+    });
     }
 
     @Override
@@ -43,14 +50,16 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.UserLi
     }
 
 
-    public class UserListViewHolder extends RecyclerView.ViewHolder{
-        public TextView mName;
-        public TextView mPhone;
+     class UserListViewHolder extends RecyclerView.ViewHolder{
+         TextView mName;
+         TextView mPhone;
+         CheckBox mAdd;
 
-        public  UserListViewHolder (View view){
+          UserListViewHolder (View view){
             super(view);
             mName = view.findViewById(R.id.name);
             mPhone = view.findViewById(R.id.phone);
+            mAdd = view.findViewById(R.id.add);
         }
 
     }

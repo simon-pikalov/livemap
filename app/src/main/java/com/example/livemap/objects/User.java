@@ -25,6 +25,7 @@ public class User implements MarkerOwner {
     private HashMap<String, User> mapPals;
     private double updateTrigger;
     MarkerLive lastLocation;
+    private boolean selected;
 
     //TODO make a class for all things general
     @Exclude
@@ -155,6 +156,15 @@ public class User implements MarkerOwner {
 
     public void setLastLocation(MarkerLive lastLocation) {
         this.lastLocation = lastLocation;
+    }
+
+
+    public boolean isSelected() {
+        return selected;
+    }
+
+    public void setSelected(boolean selected) {
+        this.selected = selected;
     }
 
     @Override

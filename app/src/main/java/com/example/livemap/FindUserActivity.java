@@ -10,6 +10,8 @@ import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.telephony.TelephonyManager;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 
 import com.example.livemap.objects.User;
 import com.example.livemap.objects.UserListAdapter;
@@ -21,6 +23,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class FindUserActivity extends AppCompatActivity {
     private RecyclerView mUserList;
@@ -30,6 +33,7 @@ public class FindUserActivity extends AppCompatActivity {
     ArrayList<User> usertListMatched;
     ArrayList<User> usertList;
     private  String isoPrefix ;
+    Button mCreatChat;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,12 +43,34 @@ public class FindUserActivity extends AppCompatActivity {
         usertListMatched = new ArrayList<User>();
         usertList = new ArrayList<User>();
         isoPrefix = getCountryIso();
+        mCreatChat = findViewById(R.id.creat);
+        mCreatChat.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                createChat();
+            }
+        });
         initializeRecyclerView();
 
         getContactList();
         getUsersFromFireBase();
         Log.i("usertList", usertList.toString());
         Log.i("contactList", contactList.toString());
+
+    }
+
+
+    private void createChat(){
+        Boolean validChat = false;
+        for(User mUser : usertList){
+            if(mUser.isSelected()){
+                validChat = true;
+            }
+        }
+
+        if(validChat){
+
+        }
 
     }
 
