@@ -24,6 +24,7 @@ public class User implements MarkerOwner {
     private HashMap<String, Group> groups;
     private HashMap<String, User> mapPals;
     private double updateTrigger;
+    MarkerLive lastLocation;
 
     //TODO make a class for all things general
     @Exclude
@@ -145,6 +146,15 @@ public class User implements MarkerOwner {
 
     public void setPhone(String phone) {
         this.phone = phone;
+    }
+
+
+    public MarkerLive getLastLocation() {
+        return lastLocation;
+    }
+
+    public void setLastLocation(MarkerLive lastLocation) {
+        this.lastLocation = lastLocation;
     }
 
     @Override

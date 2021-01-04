@@ -36,8 +36,9 @@ public class FirebaseFunctionalities {
     private DatabaseReference mUsersNode;
     private DatabaseReference mGroupUserNode;
     private DatabaseReference mMessagesNode;
+    private DatabaseReference mUserLocationNode;
     private FirebaseInteractionListener mListener;
-
+    private static FirebaseFunctionalities instance;
     //interface to delegate instructions to main activity
     public interface FirebaseInteractionListener {
         void receiveGroupJoinInvitation(MessageLive message);
@@ -49,10 +50,27 @@ public class FirebaseFunctionalities {
     //this path contains for every user and for every group its members and groups he is in, respectively
     private final String GROUP_USER_RELATION_PATH = "/group_user/";
     private final String MARKERS_PATH = "/markers/";
+    private final String USER_LOCATIONS_PATH = "/users_locations/";
 
     CountDownLatch done;
 
-    public FirebaseFunctionalities(Context context, GoogleMap map) {
+    /**
+     * Thread safe Singleton Init function
+     * @param context
+     * @param map
+     * @return
+     */
+    public static FirebaseFunctionalities getInstance(Context context, GoogleMap map){
+        if(instance==null){
+            synchronized (FirebaseFunctionalities.class){
+                if(instance==null)
+                    instance = new FirebaseFunctionalities(context,map);
+            }
+        }
+        return instance;
+    }
+
+    private FirebaseFunctionalities(Context context, GoogleMap map) {
         mMap = map;
         mListener = (FirebaseInteractionListener) context;
         mDatabase = FirebaseDatabase.getInstance();
@@ -60,6 +78,7 @@ public class FirebaseFunctionalities {
         mUsersNode = mDatabase.getReference(USERS_PATH);
         mGroupUserNode = mDatabase.getReference(GROUP_USER_RELATION_PATH);
         mMessagesNode = mDatabase.getReference(MESSAGE_BOX);
+        mUserLocationNode = mDatabase.getReference(USER_LOCATIONS_PATH);
         String uid = FirebaseAuth.getInstance().getUid();
 
         mUser = new User();
@@ -71,6 +90,7 @@ public class FirebaseFunctionalities {
         addMessageListener();
         mUserMarkersNode = mDatabase.getReference(MARKERS_PATH + mUser.getId() + "/");
         setListenerForMarkers();
+        setListenerForUserLocation();
         creatData();
 
     }
@@ -199,6 +219,37 @@ public class FirebaseFunctionalities {
         });
     }
 
+
+    private void setListenerForUserLocation() {
+        mUserLocationNode.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+                MarkerLive markerLive = (MarkerLive) snapshot.getValue(MarkerLive.class);
+                Log.w("Firebase", "Got markerLive: " + markerLive.toString());
+            }
+
+            @Override
+            public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+
+            }
+
+            @Override
+            public void onChildRemoved(@NonNull DataSnapshot snapshot) {
+            }
+
+            @Override
+            public void onChildMoved(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+
+        });
+
+    }
 
     private void setListenerForMarkers() {
         mUserMarkersNode.addChildEventListener(new ChildEventListener() {
@@ -493,4 +544,26 @@ public class FirebaseFunctionalities {
     public User getCurrentUser() {
         return mUser;
     }
+
+    /**
+     * add User to FireBase
+     * @param user The User to be added to firebase
+     */
+    public void addUser(User user){
+        Log.w("Firebase", "creating new user" + mUser);
+        DatabaseReference refToThisUser = mUsersNode;
+        refToThisUser.setValue(user); //save the user
+    }
+
+
+    /**
+     * add UserLocation to FireBase
+     * @param markerLive The User  Location to be added to firebase
+     */
+    public void addUserLocation(MarkerLive markerLive){
+        Log.w("Firebase", "creating new user" + markerLive);
+        DatabaseReference refToThisUser = mUserLocationNode.child(FirebaseAuth.getInstance().getUid());
+        refToThisUser.setValue(markerLive); //save the user Location
+    }
+
 }

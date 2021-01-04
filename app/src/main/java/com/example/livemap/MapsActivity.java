@@ -46,6 +46,8 @@ import android.location.Location;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 
+import java.util.HashMap;
+
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback
         , MarkerInfoFragment.OnFragmentInteractionListener, NewMarkerFragment.OnFragmentInteractionListener,
@@ -90,7 +92,6 @@ GroupFragment.OnFragmentInteractionListener, FirebaseFunctionalities.FirebaseInt
 
 
         currAction = MacActions.ADD;
-
         mapCollection = new MapDataSet();
 
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
@@ -180,7 +181,7 @@ GroupFragment.OnFragmentInteractionListener, FirebaseFunctionalities.FirebaseInt
         setMapClicks(mMap);
 
         String userId = FirebaseAuth.getInstance().getUid();
-        mFireFunc= new FirebaseFunctionalities(this,mMap);
+        mFireFunc=  FirebaseFunctionalities.getInstance(this,mMap);
         mUser = mFireFunc.getCurrentUser();
 
         enableMyLocation();
@@ -196,6 +197,7 @@ GroupFragment.OnFragmentInteractionListener, FirebaseFunctionalities.FirebaseInt
 
         }
     };
+
 
     private void setUserLocationMarker (Location lastLocation){
         if (lastLocation == null) {

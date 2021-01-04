@@ -1,6 +1,7 @@
 package com.example.livemap.objects;
 
 
+import android.location.Location;
 import android.util.Log;
 
 import com.example.livemap.utils.LatLngLive;
@@ -38,6 +39,7 @@ public class MarkerLive  {
     private BitmapDescriptor icon;
     //remove when uploading to DB and add when creating marker on device
     private transient Marker marker;
+
 
     // for Firebase serialization
     public MarkerLive(){}

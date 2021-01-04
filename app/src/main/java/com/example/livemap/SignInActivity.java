@@ -29,6 +29,7 @@ import java.util.concurrent.TimeUnit;
 public class SignInActivity extends AppCompatActivity {
     private EditText mPhoneNumber;
     private EditText mCode;
+    private EditText mName;
     private Button mSend;
     private PhoneAuthProvider.OnVerificationStateChangedCallbacks mCallbacks;
     private String mVerificationId;
@@ -44,6 +45,7 @@ public class SignInActivity extends AppCompatActivity {
         mPhoneNumber = findViewById(R.id.phoneNumber);
         mCode = findViewById(R.id.code);
         mSend = findViewById(R.id.sendVerificationButton);
+        mName = findViewById(R.id.name);
         rootNode = FirebaseDatabase.getInstance();
         mRef = rootNode.getReference("/root/users/");
         mSend.setOnClickListener(new View.OnClickListener() {
@@ -94,6 +96,9 @@ public class SignInActivity extends AppCompatActivity {
         FirebaseAuth.getInstance().signInWithCredential(phoneAuthCredential).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
+                if(mSend.isPressed()){
+                    addUserToFirebase();
+                }
                 if (task.isSuccessful()) {
                     userIsLoggedIn();
                 }
@@ -101,23 +106,23 @@ public class SignInActivity extends AppCompatActivity {
         });
     }
 
-//    void addUserToFirebase() {
-//        //@TODO this is hard coded , replace with hash and more generic method
-//        boolean isAdmin = (true);
-//        FirebaseUser fUser = FirebaseAuth.getInstance().getCurrentUser();
-//        if (fUser!=null){
-//            String sUid = FirebaseAuth.getInstance().getCurrentUser().getUid(); // the user hash of the current user
-//            User cUser = new User(sUid);
-//            Log.w("user",cUser.toString());
-//            rootNode = FirebaseDatabase.getInstance();
-//            mRef = rootNode.getReference("/users/" +sUid);
-//            mRef.setValue(cUser);
-//        }
-//    }
+    void addUserToFirebase() {
+        boolean isAdmin = (true);
+        FirebaseUser fUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (fUser!=null){
+            String sUid = FirebaseAuth.getInstance().getCurrentUser().getUid(); // the user hash of the current user
+            String sPhone = FirebaseAuth.getInstance().getCurrentUser().getPhoneNumber();
+            String sName = FirebaseAuth.getInstance().getCurrentUser().getPhoneNumber();
+            User cUser = new User(sName,sUid,sPhone);
+            Log.w("user",cUser.toString());
+            rootNode = FirebaseDatabase.getInstance();
+            mRef = rootNode.getReference("/users/" +sUid);
+            mRef.setValue(cUser);
+        }
+    }
 
     private void userIsLoggedIn() {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-//        addUserToFirebase();
         if (user != null) {
             startActivity(new Intent(getApplicationContext(), MapsActivity.class));
             finish();
