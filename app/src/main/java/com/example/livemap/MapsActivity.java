@@ -21,12 +21,10 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.Switch;
 import android.widget.Toast;
 
 import com.example.livemap.utils.FirebaseFunctionalities;
-import com.example.livemap.utils.MarkerOwner;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
@@ -49,7 +47,6 @@ import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 
@@ -407,7 +404,7 @@ GroupFragment.OnFragmentInteractionListener, FirebaseFunctionalities.FirebaseInt
     @Override
     public void markerInfoCompleteDelete(MarkerLive ml) {
         mFireFunc.removeMarkerFromFirebase(ml);
-        ml.cleanup();
+        ml.removeAndCleanup();
         closeMarkerInfoWindow ();
     }
 

@@ -101,7 +101,7 @@ public class MarkerLive  {
     }
 
     // removes itself from owners and deletes corresponding marker from map
-    public void cleanup(){
+    public void removeAndCleanup(){
         owner.removeMarkerLive(this);
         marker.remove();
     }

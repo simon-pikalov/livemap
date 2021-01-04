@@ -12,7 +12,6 @@ import com.example.livemap.objects.MessageLive;
 import com.example.livemap.objects.User;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.ChildEventListener;
@@ -24,7 +23,6 @@ import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.LinkedList;
-import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 public class FirebaseFunctionalities {
@@ -91,7 +89,7 @@ public class FirebaseFunctionalities {
         mUserMarkersNode = mDatabase.getReference(MARKERS_PATH + mUser.getId() + "/");
         setListenerForMarkers();
         setListenerForUserLocation();
-        creatData();
+//        creatData();
 
     }
 
@@ -103,32 +101,32 @@ public class FirebaseFunctionalities {
         DatabaseReference refToThisUser = mUsersNode.child(uid);
         Log.w("JonFirebase", "got reference: " + refToThisUser);
         refToThisUser.addValueEventListener(new ValueEventListener() {
-                                                @Override
-                                                public void onDataChange(DataSnapshot snapshot) {
-                                                    Log.w("JonFirebase", "tried to get user from db: " + snapshot);
-                                                    User tempUser = snapshot.getValue(User.class);
-                                                    if (tempUser != null) {
-                                                        Log.w("Firebase", "successfuly restored user: " + mUser.toString());
-                                                    } else {
-                                                        Log.w("Firebase", "creating new user");
-                                                        FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-                                                        if (firebaseUser != null) {
-                                                            String phone = FirebaseAuth.getInstance().getCurrentUser().getPhoneNumber();
-                                                            String sUid = FirebaseAuth.getInstance().getCurrentUser().getUid(); // the user hash of the current user
-                                                            tempUser = new User("name", sUid, phone);
-                                                            Log.w("Firebase", "creating new user" + mUser);
-                                                            refToThisUser.setValue(tempUser); //save the user
-                                                        }
-                                                    }
-                                                    mUser.setPhone(tempUser.getPhone());
-                                                    mUser.setName(tempUser.getName());
-                                                }
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                Log.w("JonFirebase", "tried to get user from db: " + snapshot);
+                User tempUser = snapshot.getValue(User.class);
+                if (tempUser != null) {
+                    Log.w("Firebase", "successfuly restored user: " + mUser.toString());
+                } else {
+                    Log.w("Firebase", "creating new user");
+                    FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+                    if (firebaseUser != null) {
+                        String phone = FirebaseAuth.getInstance().getCurrentUser().getPhoneNumber();
+                        String sUid = FirebaseAuth.getInstance().getCurrentUser().getUid(); // the user hash of the current user
+                        tempUser = new User("name", sUid, phone);
+                        Log.w("Firebase", "creating new user" + mUser);
+                        refToThisUser.setValue(tempUser); //save the user
+                    }
+                }
+                mUser.setPhone(tempUser.getPhone());
+                mUser.setName(tempUser.getName());
+            }
 
-                                                @Override
-                                                public void onCancelled(@NonNull DatabaseError error) {
-                                                    Log.w("JonFirebase", error.getMessage());
-                                                }
-                                            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.w("JonFirebase", error.getMessage());
+            }
+        }
 
         );
 
@@ -273,14 +271,7 @@ public class FirebaseFunctionalities {
 
             @Override
             public void onChildRemoved(@NonNull DataSnapshot snapshot) {
-                MarkerLive markerLive = (MarkerLive) snapshot.getValue(MarkerLive.class);
-                //Log.w("JonFirebase", "Got markerLive: " + markerLive.toString());
-                //if it's a new marker, create it
-                if (mUser.hasMarker(markerLive.getId())) {
-                    markerLive.restoreOwner(mUser);
-                    Marker marker = mMap.addMarker(markerLive.getMarkerOptions());
-                    markerLive.attachMarker(marker);
-                }
+                // not relevant
             }
 
             @Override
@@ -374,9 +365,7 @@ public class FirebaseFunctionalities {
                 Log.w("JonFirebase", "Got group marker: " + markerLive.toString());
                 //if it's a new marker, create it
                 if (mUser.hasMarker(markerLive.getId())) {
-                    markerLive.restoreOwner(mUser);
-                    Marker marker = mMap.addMarker(markerLive.getMarkerOptions());
-                    markerLive.attachMarker(marker);
+                    markerLive.removeAndCleanup();
                 }
 
 
@@ -399,11 +388,16 @@ public class FirebaseFunctionalities {
             @Override
             public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
                 String userId = snapshot.getKey();
-                Log.w("JonFirebase", "adding listener for group user (if needed): " + userId);
+                Log.w("JonFirebase", "adding listener for group: "+groupId+" user (if needed): " + userId);
                 if (userId != mUser.getId()) {
                     addListenerForGroupUser(userId);
                 }
-                mUser.getGroupById(groupId).addUser(userId);
+                if(mUser.getGroupById(groupId)!=null) {
+                    mUser.getGroupById(groupId).addUser(userId);
+                }
+                else{
+                    throw new NullPointerException("failed to get group: "+groupId+" available are: "+mUser.getGroups());
+                }
             }
 
             @Override
@@ -522,6 +516,7 @@ public class FirebaseFunctionalities {
     // just adds the group to the relations, listeners will take care of the rest
     public void joinGroup(String groupId) {
         mGroupUserNode.child(mUser.getId()).child(groupId).setValue(groupId);
+        mGroupUserNode.child(groupId).child(mUser.getId()).setValue(mUser.getId());
     }
 
     public void removeUserFromGroup(String userId, String groupId) {
