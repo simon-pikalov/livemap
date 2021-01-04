@@ -5,11 +5,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.annotation.SuppressLint;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.provider.ContactsContract;
-import android.provider.Telephony;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
@@ -20,7 +18,6 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
@@ -30,6 +27,7 @@ public class FindUserActivity extends AppCompatActivity {
     private RecyclerView.Adapter mUserListAdapter;
     private RecyclerView.LayoutManager mUserListLayoutManager;
     ArrayList<User> contactList;
+    ArrayList<User> usertListMatched;
     ArrayList<User> usertList;
     private  String isoPrefix ;
 
@@ -38,10 +36,16 @@ public class FindUserActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_find_user);
         contactList = new ArrayList<User>();
+        usertListMatched = new ArrayList<User>();
         usertList = new ArrayList<User>();
-        initializeRecyclerView();
-        getContactList();
         isoPrefix = getCountryIso();
+        initializeRecyclerView();
+
+        getContactList();
+        getUsersFromFireBase();
+        Log.i("usertList", usertList.toString());
+        Log.i("contactList", contactList.toString());
+
     }
 
     private void getContactList(){
@@ -57,71 +61,85 @@ public class FindUserActivity extends AppCompatActivity {
             if (!String.valueOf(phone.charAt(0)).equals("+"))  phone= isoPrefix+phone;
             User mContact = new User(name,"",phone);
             contactList.add(mContact);
-            getUserDetails(mContact);
         }
     }
 
 
-
-
-    private void getUserDetails(User mContact) {
+    private void getUsersFromFireBase(){
 
         DatabaseReference mUserDb = FirebaseDatabase.getInstance().getReference().child("/users/");
-
-       // Query query = mUserDb.orderByChild("phone").equalTo(mContact.getPhone());
-
-        mUserDb.addValueEventListener(new ValueEventListener() {
+        mUserDb.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                if (snapshot.exists()){
+                ArrayList<User> fireList = new ArrayList<>();
+               // if (snapshot.exists()){
+                Log.i("my snapshot ! ",snapshot.toString());
                     for( DataSnapshot d : snapshot.getChildren()){
                         String name = d.child("name").getValue(String.class);
                         String phone = d.child("phone").getValue(String.class);
                         if (!String.valueOf(phone.charAt(0)).equals("+"))  phone= isoPrefix+phone.substring(1);
                         String id = d.child("name").getValue(String.class);
                         User u = new User(name,id,phone);
-                        contactList.add(u);
-                        Log.i("equals",u.getPhone()+"==?"+mContact.getPhone());
-                        if (u.getPhone().equals(mContact.getPhone())){
-                            User mUser = new User(name,"",phone);
-                            usertList.add(mUser);
-                            mUserListAdapter.notifyDataSetChanged();
-                            return;
-                        }
-
+                        Log.i("User",u.toString());
+                        fireList.add(u);
                     }
+                Log.i("fireList",fireList.toString());
+                Log.i("usertList",fireList.toString());
+                usertList = fireList;
+                findMatches();
                 }
 
-            }
+           // }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
 
             }
         });
-//        query.addListenerForSingleValueEvent(new ValueEventListener() {
+
+
+
+    }
+
+    private void findMatches() {
+        for (User user : usertList) {
+            for (User conatct : contactList) {
+                Log.i("equals", user.getPhone() + "==?" + conatct.getPhone());
+                if (user.getPhone().equals(conatct.getPhone())) {
+                    usertListMatched.add(user);
+                    mUserListAdapter.notifyDataSetChanged();
+                    return;
+                }
+            }
+        }
+    }
+
+
+//    private void getUserDetails(User mContact) {
+//
+//        DatabaseReference mUserDb = FirebaseDatabase.getInstance().getReference().child("/users/");
+//
+//        mUserDb.addListenerForSingleValueEvent(new ValueEventListener() {
 //            @Override
 //            public void onDataChange(@NonNull DataSnapshot snapshot) {
-//                if(snapshot.exists()){
-//                   String phone = "";
-//                   String name = "";
-//                   for (DataSnapshot  childSNapshot : snapshot.getChildren()){
-//                       if (childSNapshot.child("phone").getValue()!= null){
-//                           phone = childSNapshot.child("phone").getValue().toString();
-//                       }
-//                       if (childSNapshot.child("name").getValue()!= null){
-//                           name = childSNapshot.child("name").getValue().toString();
-//                       }
+//                if (snapshot.exists()){
+//                    for( DataSnapshot d : snapshot.getChildren()){
+//                        String name = d.child("name").getValue(String.class);
+//                        String phone = d.child("phone").getValue(String.class);
+//                        if (!String.valueOf(phone.charAt(0)).equals("+"))  phone= isoPrefix+phone.substring(1);
+//                        String id = d.child("name").getValue(String.class);
+//                        User u = new User(name,id,phone);
+//                        Log.i("equals",u.getPhone()+"==?"+mContact.getPhone());
+//                        if (u.getPhone().equals(mContact.getPhone())){
+//                            User mUser = new User(name,"",phone);
+//                            usertListMatched.add(mUser);
+//                            mUserListAdapter.notifyDataSetChanged();
+//                            return;
+//                        }
 //
-//
-//                   }
-//                   String isoPrefix = getCountryIso();
-//                   if (!String.valueOf(phone.charAt(0)).equals("+"))  phone= isoPrefix+phone;
-//                   User mUser = new User(name,"",phone);
-//                   usertList.add(mUser);
-//                   mUserListAdapter.notifyDataSetChanged();
-//                   return;
+//                    }
 //                }
+//
 //            }
 //
 //            @Override
@@ -129,8 +147,9 @@ public class FindUserActivity extends AppCompatActivity {
 //
 //            }
 //        });
-
-    }
+//
+//
+//    }
 
     private String getCountryIso(){
      String iso = null;
@@ -150,7 +169,7 @@ public class FindUserActivity extends AppCompatActivity {
         mUserList.setHasFixedSize(false);
         mUserListLayoutManager = new LinearLayoutManager(getApplicationContext(),LinearLayoutManager.VERTICAL,false);
         mUserList.setLayoutManager(mUserListLayoutManager);
-        mUserListAdapter = new UserListAdapter(usertList);
+        mUserListAdapter = new UserListAdapter(usertListMatched);
         mUserList.setAdapter(mUserListAdapter);
     }
 
