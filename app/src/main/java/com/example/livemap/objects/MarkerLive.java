@@ -67,6 +67,7 @@ public class MarkerLive  {
 
 
     // attach marker to user or group after restoring from database
+    // user is session user
     public void restoreOwner(User user){
         //Log.w("MarkerLive", "restore owner: markerownerId is: "+ownerId+"user id is: "+user.getId());
         if(ownerId.equals(user.getId())){
@@ -74,6 +75,7 @@ public class MarkerLive  {
         }
         else {
             Group group = user.getGroupById(ownerId);
+            Log.w("MarkerLive", "attempting to restore owner: "+ownerId+", available are: "+user.getGroups());
             if (group != null) owner=group;
             else throw new RuntimeException("attempted to restore a marker without existing owner");
         }
@@ -132,7 +134,7 @@ public class MarkerLive  {
     }
     public boolean isVisible(){return visible;}
 
-    public String getOwnerId() { return owner.getId(); }
+    public String getOwnerId() { return ownerId; }
     public void setOwnerId(String id) { this.ownerId=id; }
 
     @Exclude

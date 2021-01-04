@@ -60,6 +60,7 @@ public class GroupFragment extends Fragment {
         // create a remove user button that will only be visible when a user is selected
         Button removeUserButton = rootView.findViewById(R.id.remove_button_group_fragment);
         Button inviteButton = rootView.findViewById(R.id.invite_button_group_fragment);
+        inviteButton.setVisibility(View.INVISIBLE);
         TextView titleText = rootView.findViewById(R.id.group_title_text);
         titleText.setText(mGroup.getName());
         removeUserButton.setVisibility(View.INVISIBLE);
@@ -67,14 +68,19 @@ public class GroupFragment extends Fragment {
         // Get a handle to the RecyclerView.
         mRecyclerView = rootView.findViewById(R.id.users_recycler_view);
         // Create an adapter and supply the data to be displayed.
-        mAdapter = new UserListAdapter(getContext(),mUser, mGroup,removeUserButton,inviteButton);
+        mAdapter = new UserListAdapter(getContext(),mUser, mGroup,removeUserButton);
         // Connect the adapter with the RecyclerView.
         mRecyclerView.setAdapter(mAdapter);
         // Give the RecyclerView a default layout manager.
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
         final Button closeButton = rootView.findViewById(R.id.close_button_group_fragment);
-
+//        inviteButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                mListener.groupFragmentAddMarker(mGroup);
+//            }
+//        });
 
 
         closeButton.setOnClickListener(new View.OnClickListener() {

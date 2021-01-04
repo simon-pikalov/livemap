@@ -34,6 +34,11 @@
         android:hint="Enter Marker description"
         android:inputType="text" />
 
+    <Spinner
+        android:id="@+id/owner_select_spinner_new_marker"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
     <Switch
         android:id="@+id/private_switch_create_window"
         android:layout_width="match_parent"
@@ -53,4 +58,5 @@
         android:layout_height="wrap_content"
         android:text="Cancel"
         app:backgroundTint="#858585" />
+
 </LinearLayout>

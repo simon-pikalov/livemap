@@ -26,6 +26,7 @@ import android.widget.Switch;
 import android.widget.Toast;
 
 import com.example.livemap.utils.FirebaseFunctionalities;
+import com.example.livemap.utils.MarkerOwner;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
@@ -133,8 +134,7 @@ GroupFragment.OnFragmentInteractionListener, FirebaseFunctionalities.FirebaseInt
             if(resultCode == RESULT_OK){
                 ArrayList<String> userIds = (ArrayList<String>)data.getSerializableExtra("userList");
                 Log.w("JonReturnToMain", "got user list: "+userIds);
-
-                //TODO
+                openMyGroupsFragment(mUser, userIds);
             }
         }
     }
@@ -374,9 +374,9 @@ GroupFragment.OnFragmentInteractionListener, FirebaseFunctionalities.FirebaseInt
 
     // gets data from new marker fragment and creates new marker
     @Override
-    public void newMarkerFragmentCreate(MarkerLive ml) {
+    public void newMarkerFragmentCreate(MarkerLive ml, String ownerId) {
 
-        mFireFunc.addMarkerToFirebase(ml);
+        mFireFunc.addMarkerToFirebase(ml, ownerId);
 //        Log.w("MapsActivityJon", "MarkerLive is: "+ml.toString());
 //        mUser.addMarkerLive(ml);
 //        Marker newMarker = mMap.addMarker(ml.getMarkerOptions());
@@ -430,6 +430,7 @@ GroupFragment.OnFragmentInteractionListener, FirebaseFunctionalities.FirebaseInt
     public void groupFragmentComplete() { closeGroupFragment(); }
 
 
+
     @Override
     public void receiveGroupJoinInvitation(MessageLive messageLive) {
         //TODO make message box (maybe chat etc,)
@@ -471,7 +472,7 @@ GroupFragment.OnFragmentInteractionListener, FirebaseFunctionalities.FirebaseInt
         isCustomizeFragmentDisplayed = true;
         // Instantiate the fragment.
         NewMarkerFragment newMarkerFragment =
-                NewMarkerFragment.newInstance(ml);
+                NewMarkerFragment.newInstance(ml, mUser);
         // Get the FragmentManager and start a transaction.
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager

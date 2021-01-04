@@ -21,18 +21,18 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.GroupV
     private final List<User> mUserList;
     private LayoutInflater mInflater;
     private final Button mRemoveUserButton;
-    private final Button mInviteButton;
+//    private final Button mInviteButton;
     private User mSelectedUser;
     private User mCurrentUser;
     private Group mGroup;
     private Context mContext;
 
-    public UserListAdapter(Context context,User currentUser, Group group, Button rub,Button inviteButton) {
+    public UserListAdapter(Context context,User currentUser, Group group, Button rub) {
 
         mInflater = LayoutInflater.from(context);
         mUserList = group.getUsersList();
         mRemoveUserButton = rub;
-        mInviteButton = inviteButton;
+//        mInviteButton = inviteButton;
         mCurrentUser=currentUser;
         mGroup=group;
         mContext = context;
@@ -70,13 +70,13 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.GroupV
                 }
             });
 
-            mInviteButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    //TODO allow user to invite by phone number or whatever
-//                    mCurrentUser.getFireFunc().sendGroupInvitation(???,mGroup);
-                }
-            });
+//            mInviteButton.setOnClickListener(new View.OnClickListener() {
+//                @Override
+//                public void onClick(View view) {
+//                    //TODO allow user to invite by phone number or whatever
+////                    mCurrentUser.getFireFunc().sendGroupInvitation(???,mGroup);
+//                }
+//            });
         }
 
         @Override

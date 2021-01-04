@@ -488,9 +488,9 @@ public class FirebaseFunctionalities {
     }
 
 
-    public void addMarkerToFirebase(MarkerLive markerLive) {
-        // get reference to path of current marker
-        DatabaseReference markerRef = mUserMarkersNode.child(markerLive.getId());
+    public void addMarkerToFirebase(MarkerLive markerLive, String ownerId) {
+        DatabaseReference markerRef = mDatabase.getReference(MARKERS_PATH)
+                .child(ownerId).child(markerLive.getId());
         // set its value
         markerRef.setValue(markerLive);
 
@@ -499,14 +499,7 @@ public class FirebaseFunctionalities {
     }
 
     public void removeMarkerFromFirebase(MarkerLive markerLive) {
-        DatabaseReference markerRef = mUserMarkersNode.child(markerLive.getId());
-        int numOfCopies = markerLive.getNumOfCopies();
-        // if marker has only one copy on this device
-        if (numOfCopies == 1) {
-            markerRef.removeValue();
-        } else {
-            markerRef.child("numOfCopies").setValue(numOfCopies - 1);
-        }
+        mDatabase.getReference(MARKERS_PATH).child(markerLive.getOwnerId()).removeValue();
     }
 
     // used only when creating a group
