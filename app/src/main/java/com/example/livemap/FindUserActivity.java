@@ -115,41 +115,6 @@ public class FindUserActivity extends AppCompatActivity {
     }
 
 
-//    private void getUserDetails(User mContact) {
-//
-//        DatabaseReference mUserDb = FirebaseDatabase.getInstance().getReference().child("/users/");
-//
-//        mUserDb.addListenerForSingleValueEvent(new ValueEventListener() {
-//            @Override
-//            public void onDataChange(@NonNull DataSnapshot snapshot) {
-//                if (snapshot.exists()){
-//                    for( DataSnapshot d : snapshot.getChildren()){
-//                        String name = d.child("name").getValue(String.class);
-//                        String phone = d.child("phone").getValue(String.class);
-//                        if (!String.valueOf(phone.charAt(0)).equals("+"))  phone= isoPrefix+phone.substring(1);
-//                        String id = d.child("name").getValue(String.class);
-//                        User u = new User(name,id,phone);
-//                        Log.i("equals",u.getPhone()+"==?"+mContact.getPhone());
-//                        if (u.getPhone().equals(mContact.getPhone())){
-//                            User mUser = new User(name,"",phone);
-//                            usertListMatched.add(mUser);
-//                            mUserListAdapter.notifyDataSetChanged();
-//                            return;
-//                        }
-//
-//                    }
-//                }
-//
-//            }
-//
-//            @Override
-//            public void onCancelled(@NonNull DatabaseError error) {
-//
-//            }
-//        });
-//
-//
-//    }
 
     private String getCountryIso(){
      String iso = null;

@@ -13,6 +13,7 @@ import com.example.livemap.objects.User;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.Marker;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -95,10 +96,33 @@ public class FirebaseFunctionalities {
 //            }
 //        });
 
+
+        //    void addUserToFirebase() {
+//        //@TODO this is hard coded , replace with hash and more generic method
+//        boolean isAdmin = (true);
+//        FirebaseUser fUser = FirebaseAuth.getInstance().getCurrentUser();
+//        if (fUser!=null){
+//            String sUid = FirebaseAuth.getInstance().getCurrentUser().getUid(); // the user hash of the current user
+//            User cUser = new User(sUid);
+//            Log.w("user",cUser.toString());
+//            rootNode = FirebaseDatabase.getInstance();
+//            mRef = rootNode.getReference("/users/" +sUid);
+//            mRef.setValue(cUser);
+//        }
+//
+//    }
         if(mUser==null){
-            Log.w("JonFirebase", "creating new user");
-            mUser=new User("Jonny", uid,"0502253227");
+            Log.w("Firebase", "creating new user");
+            FirebaseUser fUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (fUser!=null){
+            String phone = FirebaseAuth.getInstance().getCurrentUser().getPhoneNumber();
+            String sUid = FirebaseAuth.getInstance().getCurrentUser().getUid(); // the user hash of the current user
+            mUser = new User("name",sUid,phone);
             refToThisUser.setValue(mUser);
+            Log.w("Firebase", "creating new user"+mUser);
+        }
+            //mUser=new User("Jonny", uid,"0502253227");
+
         }
 
         /////////////TEST DATA START/////////////////////////

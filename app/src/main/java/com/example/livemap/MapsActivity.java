@@ -95,13 +95,14 @@ GroupFragment.OnFragmentInteractionListener, FirebaseFunctionalities.FirebaseInt
 
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
 
+
         //init the  locationRequest
         locationRequest = LocationRequest.create();
         locationRequest.setInterval(500); //mils interval
         locationRequest.setFastestInterval(100); //mils interval
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-
         getPermission();
+
 
     }// END OF ONCREATE
 
@@ -149,7 +150,7 @@ GroupFragment.OnFragmentInteractionListener, FirebaseFunctionalities.FirebaseInt
     protected void onStart () {
         super.onStart();
         //TODO start updates
-        //startLocationUpdates();
+        startLocationUpdates();
     }
 
     @Override
@@ -184,7 +185,8 @@ GroupFragment.OnFragmentInteractionListener, FirebaseFunctionalities.FirebaseInt
         mUser = mFireFunc.getCurrentUser();
 
 
-        //enableMyLocation();
+        enableMyLocation();
+
     }
 
     LocationCallback locationCallback = new LocationCallback() {
