@@ -136,16 +136,27 @@ public class FindUserActivity extends AppCompatActivity {
     }
 
     private void findMatches() {
+        boolean exist = false;
         for (User user : usertList) {
             for (User conatct : contactList) {
-                Log.i("equals", user.getPhone() + "==?" + conatct.getPhone());
+                exist = false;
                 if (user.getPhone().equals(conatct.getPhone())) {
-                    usertListMatched.add(user);
-                    mUserListAdapter.notifyDataSetChanged();
-                    return;
+                    Log.i("equals", user.getPhone() + "==" + conatct.getPhone());
+                    for (User matched : usertListMatched){
+                        if (matched.getPhone().equals(user.getPhone())){
+                            exist = true;
+                        }
+                    }
+
+                    if(!exist) {
+                        usertListMatched.add(user);
+                        mUserListAdapter.notifyDataSetChanged();
+                    }
                 }
             }
+
         }
+        return;
     }
 
 
