@@ -103,12 +103,16 @@ public class SignInActivity extends AppCompatActivity {
 //    void addUserToFirebase() {
 //        //@TODO this is hard coded , replace with hash and more generic method
 //        boolean isAdmin = (true);
-//        String sUid = FirebaseAuth.getInstance().getCurrentUser().getUid(); // the user hash of the current user
-//        User cUser = new User(sUid);
-//        Log.w("user",cUser.toString());
-//        rootNode = FirebaseDatabase.getInstance();
-//        mRef = rootNode.getReference("/root/users/" +sUid);
-//        mRef.setValue(cUser);
+//        FirebaseUser fUser = FirebaseAuth.getInstance().getCurrentUser();
+//        if (fUser!=null){
+//            String sUid = FirebaseAuth.getInstance().getCurrentUser().getUid(); // the user hash of the current user
+//            User cUser = new User(sUid);
+//            Log.w("user",cUser.toString());
+//            rootNode = FirebaseDatabase.getInstance();
+//            mRef = rootNode.getReference("/users/" +sUid);
+//            mRef.setValue(cUser);
+//        }
+//
 //    }
 
     private void userIsLoggedIn() {

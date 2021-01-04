@@ -48,6 +48,13 @@ public class User implements MarkerOwner {
     public User(String name){
         this(name, UUID.randomUUID().toString());
     }
+
+    /**
+     *
+     * @param name name of user
+     * @param id Uid
+     * @param phone phone number
+     */
     public User(String name, String id, String phone) {
         this(name, id);
         this.phone = phone;
@@ -141,9 +148,11 @@ public class User implements MarkerOwner {
 
     @Override
     public String toString() {
-        return "User{name=" +name+", "+
-                "ID='" + id + '\'' +
+        return "User{" +
+                "name='" + name + '\'' +
                 ", isAdmin=" + isAdmin +
+                ", id='" + id + '\'' +
+                ", phone='" + phone + '\'' +
                 '}';
     }
 }
