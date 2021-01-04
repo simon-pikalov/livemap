@@ -95,7 +95,6 @@ GroupFragment.OnFragmentInteractionListener, FirebaseFunctionalities.FirebaseInt
 
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
 
-
         //init the  locationRequest
         locationRequest = LocationRequest.create();
         locationRequest.setInterval(500); //mils interval
@@ -184,9 +183,7 @@ GroupFragment.OnFragmentInteractionListener, FirebaseFunctionalities.FirebaseInt
         mFireFunc= new FirebaseFunctionalities(this,mMap);
         mUser = mFireFunc.getCurrentUser();
 
-
         enableMyLocation();
-
     }
 
     LocationCallback locationCallback = new LocationCallback() {

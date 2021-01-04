@@ -35,6 +35,7 @@ public class User implements MarkerOwner {
         markers = new HashMap<>();
         mapPals = new HashMap<>();
         updateTrigger = Math.random();
+        this.id = null;
     }
 
     public User(String name, String id) {

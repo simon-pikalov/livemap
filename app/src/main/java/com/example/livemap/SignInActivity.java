@@ -100,6 +100,7 @@ public class SignInActivity extends AppCompatActivity {
             }
         });
     }
+
 //    void addUserToFirebase() {
 //        //@TODO this is hard coded , replace with hash and more generic method
 //        boolean isAdmin = (true);
@@ -112,7 +113,6 @@ public class SignInActivity extends AppCompatActivity {
 //            mRef = rootNode.getReference("/users/" +sUid);
 //            mRef.setValue(cUser);
 //        }
-//
 //    }
 
     private void userIsLoggedIn() {
