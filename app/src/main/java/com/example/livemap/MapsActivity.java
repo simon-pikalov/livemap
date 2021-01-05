@@ -5,11 +5,16 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import android.Manifest;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -52,18 +57,18 @@ import java.util.List;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback
         , MarkerInfoFragment.OnFragmentInteractionListener, NewMarkerFragment.OnFragmentInteractionListener,
-NewGroupFragment.OnFragmentInteractionListener, MyGroupsFragment.OnFragmentInteractionListener,
-GroupFragment.OnFragmentInteractionListener, FirebaseFunctionalities.FirebaseInteractionListener{
+        NewGroupFragment.OnFragmentInteractionListener, MyGroupsFragment.OnFragmentInteractionListener,
+        GroupFragment.OnFragmentInteractionListener, FirebaseFunctionalities.FirebaseInteractionListener {
 
     private static final int REQUEST_LOCATION_PERMISSION = 1;
-    private static final int MARKER_IS_PRIVATE= 1;
+    private static final int MARKER_IS_PRIVATE = 1;
     private static final String DEFAULT_TITLE = "Unnamed Marker";
     private static final int SELECTED_USER_LIST_CODE = 12798;
     private GoogleMap mMap;
     private User mUser;
     private MacActions currAction;
     private Switch mSwitchLocation; //to show or hide curr location
-//    private String sUid;
+    //    private String sUid;
     private MapCollection mapCollection;
     private FusedLocationProviderClient fusedLocationProviderClient;
     private LocationRequest locationRequest;
@@ -110,7 +115,7 @@ GroupFragment.OnFragmentInteractionListener, FirebaseFunctionalities.FirebaseInt
 
     private void getPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            requestPermissions(new String[]{Manifest.permission.WRITE_CONTACTS,Manifest.permission.READ_CONTACTS},1);
+            requestPermissions(new String[]{Manifest.permission.WRITE_CONTACTS, Manifest.permission.READ_CONTACTS}, 1);
         }
     }
 
@@ -127,10 +132,10 @@ GroupFragment.OnFragmentInteractionListener, FirebaseFunctionalities.FirebaseInt
     // gets result from find user activity
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if(requestCode == SELECTED_USER_LIST_CODE){
-            if(resultCode == RESULT_OK){
-                ArrayList<String> userIds = (ArrayList<String>)data.getSerializableExtra("userList");
-                Log.w("JonReturnToMain", "got user list: "+userIds);
+        if (requestCode == SELECTED_USER_LIST_CODE) {
+            if (resultCode == RESULT_OK) {
+                ArrayList<String> userIds = (ArrayList<String>) data.getSerializableExtra("userList");
+                Log.w("JonReturnToMain", "got user list: " + userIds);
                 openMyGroupsFragment(mUser, userIds);
             }
         }
@@ -144,10 +149,10 @@ GroupFragment.OnFragmentInteractionListener, FirebaseFunctionalities.FirebaseInt
                 openNewGroupFragment(mUser);
                 return true;
             case R.id.manu_item_main_menu_my_groups:
-                openMyGroupsFragment(mUser,null);
+                openMyGroupsFragment(mUser, null);
                 return true;
             case R.id.menu_item_main_menu_my_contacts:
-                Intent intent = new Intent(getApplicationContext(),FindUserActivity.class);
+                Intent intent = new Intent(getApplicationContext(), FindUserActivity.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivityForResult(intent, SELECTED_USER_LIST_CODE);
 
@@ -157,7 +162,7 @@ GroupFragment.OnFragmentInteractionListener, FirebaseFunctionalities.FirebaseInt
                 // change checked state
                 anonymousSwitchChecked = !item.isChecked();
                 item.setChecked(anonymousSwitchChecked);
-                if(anonymousSwitchChecked) disableMyLocation();
+                if (anonymousSwitchChecked) disableMyLocation();
                 else enableMyLocation();
             default:
                 return super.onOptionsItemSelected(item);
@@ -165,20 +170,17 @@ GroupFragment.OnFragmentInteractionListener, FirebaseFunctionalities.FirebaseInt
     }
 
     @Override
-    protected void onStart () {
+    protected void onStart() {
         super.onStart();
         //TODO start updates
         startLocationUpdates();
     }
 
     @Override
-    protected void onStop () {
+    protected void onStop() {
         super.onStop();
         stopLocationUpdates();
     }
-
-
-
 
 
     /**
@@ -191,7 +193,7 @@ GroupFragment.OnFragmentInteractionListener, FirebaseFunctionalities.FirebaseInt
      * installed Google Play services and returned to the app.
      */
     @Override
-    public void onMapReady (GoogleMap googleMap){
+    public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         mMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
 
@@ -199,7 +201,7 @@ GroupFragment.OnFragmentInteractionListener, FirebaseFunctionalities.FirebaseInt
         setMapClicks(mMap);
 
         String userId = FirebaseAuth.getInstance().getUid();
-        mFireFunc=  FirebaseFunctionalities.getInstance(this,mMap);
+        mFireFunc = FirebaseFunctionalities.getInstance(this, mMap);
         mUser = mFireFunc.getCurrentUser();
 
         enableMyLocation();
@@ -217,7 +219,7 @@ GroupFragment.OnFragmentInteractionListener, FirebaseFunctionalities.FirebaseInt
     };
 
 
-    private void setUserLocationMarker (Location lastLocation){
+    private void setUserLocationMarker(Location lastLocation) {
         if (lastLocation == null) {
             Log.w("Location", "lastLocation is null");
         }
@@ -228,7 +230,7 @@ GroupFragment.OnFragmentInteractionListener, FirebaseFunctionalities.FirebaseInt
             markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.arrow));
             markerOptions.rotation(lastLocation.getBearing());
             markerOptions.position(latLng);
-            markerOptions.anchor((float)0.5,(float)0.5);
+            markerOptions.anchor((float) 0.5, (float) 0.5);
             userLocationMarker = mMap.addMarker(markerOptions);
 
         } else { // use prev created marker
@@ -236,17 +238,15 @@ GroupFragment.OnFragmentInteractionListener, FirebaseFunctionalities.FirebaseInt
             userLocationMarker.setRotation(lastLocation.getBearing());
 
         }
-        if (userLocationAccuuracyCircle == null ){
+        if (userLocationAccuuracyCircle == null) {
             CircleOptions circleOptions = new CircleOptions();
             circleOptions.center(latLng);
             circleOptions.strokeWidth(4);
-            circleOptions.strokeColor(Color.argb(255,255,0,0));
-            circleOptions.fillColor(Color.argb(32,255,0,0));
+            circleOptions.strokeColor(Color.argb(255, 255, 0, 0));
+            circleOptions.fillColor(Color.argb(32, 255, 0, 0));
             circleOptions.radius(lastLocation.getAccuracy());
             userLocationAccuuracyCircle = mMap.addCircle(circleOptions);
-        }
-
-        else {
+        } else {
             userLocationAccuuracyCircle.setCenter(latLng);
             userLocationAccuuracyCircle.setRadius(lastLocation.getAccuracy());
         }
@@ -255,7 +255,7 @@ GroupFragment.OnFragmentInteractionListener, FirebaseFunctionalities.FirebaseInt
     }
 
 
-    private void startLocationUpdates () {
+    private void startLocationUpdates() {
         //check location permission
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             enableMyLocation(); // if has no permission try making one
@@ -266,13 +266,13 @@ GroupFragment.OnFragmentInteractionListener, FirebaseFunctionalities.FirebaseInt
 
     }
 
-    private void stopLocationUpdates () {
+    private void stopLocationUpdates() {
         fusedLocationProviderClient.removeLocationUpdates(locationCallback);
     }
 
 ///////////////MAP ON CLICK START/////////////////////////////////
 
-    private void setMapClicks ( final GoogleMap map){
+    private void setMapClicks(final GoogleMap map) {
         map.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
 
             @Override
@@ -317,7 +317,7 @@ GroupFragment.OnFragmentInteractionListener, FirebaseFunctionalities.FirebaseInt
                 new GoogleMap.OnInfoWindowClickListener() {
                     @Override
                     public void onInfoWindowClick(Marker marker) {
-                        MarkerLive ml = (MarkerLive)marker.getTag();
+                        MarkerLive ml = (MarkerLive) marker.getTag();
                         openMarkerInfoWindow(ml, marker);
                     }
                 });
@@ -326,7 +326,7 @@ GroupFragment.OnFragmentInteractionListener, FirebaseFunctionalities.FirebaseInt
 ///////////////MAP ON CLICK END/////////////////////////////////
 
     // checks if there is location access, if so enables location, otherwise asks
-    private void enableMyLocation () {
+    private void enableMyLocation() {
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED) {
@@ -340,9 +340,9 @@ GroupFragment.OnFragmentInteractionListener, FirebaseFunctionalities.FirebaseInt
 
     //invoked on requestPermissions in enableMyLocation
     @Override
-    public void onRequestPermissionsResult ( int requestCode,
-    @NonNull String[] permissions,
-    @NonNull int[] grantResults){
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
         // Check if location permissions are granted and if so enable the
         // location data layer.
         switch (requestCode) {
@@ -356,7 +356,7 @@ GroupFragment.OnFragmentInteractionListener, FirebaseFunctionalities.FirebaseInt
         }
     }
 
-    void disableMyLocation () {
+    void disableMyLocation() {
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED) {
@@ -366,6 +366,38 @@ GroupFragment.OnFragmentInteractionListener, FirebaseFunctionalities.FirebaseInt
                             {Manifest.permission.ACCESS_FINE_LOCATION},
                     REQUEST_LOCATION_PERMISSION);
         }
+    }
+
+
+    private void pushNotification(String title,String text,String info){
+        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        String NOTIFICATION_CHANNEL_ID = "my_channel_id_01";
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel notificationChannel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, "liveMap Notifications", NotificationManager.IMPORTANCE_MAX);
+
+            // Configure the notification channel.
+            notificationChannel.setDescription("Channel description");
+            notificationChannel.enableLights(true);
+            notificationChannel.setLightColor(Color.RED);
+            notificationChannel.setVibrationPattern(new long[]{0, 1000, 500, 1000});
+            notificationChannel.enableVibration(true);
+            notificationManager.createNotificationChannel(notificationChannel);
+        }
+
+
+        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID);
+
+        notificationBuilder.setAutoCancel(true)
+                .setDefaults(Notification.DEFAULT_ALL)
+                .setWhen(System.currentTimeMillis())
+                .setSmallIcon(R.drawable.map2)
+                //     .setPriority(Notification.PRIORITY_MAX)
+                .setContentTitle(title)
+                .setContentText(text)
+                .setContentInfo(info);
+
+        notificationManager.notify(/*notification id*/1, notificationBuilder.build());
     }
 
 
@@ -391,21 +423,21 @@ GroupFragment.OnFragmentInteractionListener, FirebaseFunctionalities.FirebaseInt
 
 
     @Override
-    public void markerInfoCompleteNoChange () {
+    public void markerInfoCompleteNoChange() {
         closeMarkerInfoWindow();
     }
 
     @Override
     public void markerInfoCompleteChange(MarkerLive ml) {
         // TODO save changes to firebase
-        closeMarkerInfoWindow ();
+        closeMarkerInfoWindow();
     }
 
     @Override
     public void markerInfoCompleteDelete(MarkerLive ml) {
         mFireFunc.removeMarkerFromFirebase(ml);
 //        ml.removeAndCleanup();
-        closeMarkerInfoWindow ();
+        closeMarkerInfoWindow();
     }
 
 
@@ -415,7 +447,9 @@ GroupFragment.OnFragmentInteractionListener, FirebaseFunctionalities.FirebaseInt
     }
 
     @Override
-    public void myGroupsFragmentComplete(){closeMyGroupsFragment();}
+    public void myGroupsFragmentComplete() {
+        closeMyGroupsFragment();
+    }
 
     @Override
     public void myGroupsFragmentToGroupFragment(Group g) {
@@ -424,22 +458,32 @@ GroupFragment.OnFragmentInteractionListener, FirebaseFunctionalities.FirebaseInt
     }
 
     @Override
-    public void groupFragmentComplete() { closeGroupFragment(); }
-
+    public void groupFragmentComplete() {
+        closeGroupFragment();
+    }
 
 
     @Override
     public void receiveGroupJoinInvitation(MessageLive messageLive) {
+
+
+
+        String message = ("You have been invited by " + messageLive.getSenderName()
+                + " to join the group \"" + messageLive.getGroupName()
+                + "\", do you wish to accept?");
+
+        String title = ("Group Invitation");
+
+        pushNotification(title,message,"");
+
         //TODO make message box (maybe chat etc,)
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
         // Set a title for alert dialog
-        builder.setTitle("Group Invitation");
+        builder.setTitle(title);
 
         // Ask the final question
-        builder.setMessage("You have been invited by "+messageLive.getSenderName()
-                +" to join the group \""+messageLive.getGroupName()
-        +"\", do you wish to accept?");
+        builder.setMessage(message);
 
         // Set the alert dialog yes button click listener
         builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
@@ -454,7 +498,7 @@ GroupFragment.OnFragmentInteractionListener, FirebaseFunctionalities.FirebaseInt
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 Toast.makeText(getApplicationContext(),
-                        "Refused",Toast.LENGTH_SHORT).show();
+                        "Refused", Toast.LENGTH_SHORT).show();
             }
         });
         AlertDialog dialog = builder.create();
@@ -465,7 +509,7 @@ GroupFragment.OnFragmentInteractionListener, FirebaseFunctionalities.FirebaseInt
     //////////////FRAGMENT OPENERS AND CLOSERS////////////////////
     //TODO make one function for all fragment openers
 
-    private void openNewMarkerPopup (MarkerLive ml){
+    private void openNewMarkerPopup(MarkerLive ml) {
         isCustomizeFragmentDisplayed = true;
         // Instantiate the fragment.
         NewMarkerFragment newMarkerFragment =
@@ -480,7 +524,7 @@ GroupFragment.OnFragmentInteractionListener, FirebaseFunctionalities.FirebaseInt
                 newMarkerFragment).addToBackStack(null).commit();
     }
 
-    public void closeNewMarkerPopup () {
+    public void closeNewMarkerPopup() {
         isCustomizeFragmentDisplayed = false;
         // Get the FragmentManager.
         FragmentManager fragmentManager = getSupportFragmentManager();
@@ -494,7 +538,8 @@ GroupFragment.OnFragmentInteractionListener, FirebaseFunctionalities.FirebaseInt
             fragmentTransaction.remove(newMarkerFragment).commit();
         }
     }
-    private void openMarkerInfoWindow (MarkerLive markerLive, Marker marker){
+
+    private void openMarkerInfoWindow(MarkerLive markerLive, Marker marker) {
         isInfoWindowDisplayed = true;
         // Instantiate the fragment.
         MarkerInfoFragment markerInfoFragment =
@@ -509,7 +554,7 @@ GroupFragment.OnFragmentInteractionListener, FirebaseFunctionalities.FirebaseInt
                 markerInfoFragment).addToBackStack(null).commit();
     }
 
-    public void closeMarkerInfoWindow () {
+    public void closeMarkerInfoWindow() {
         isInfoWindowDisplayed = false;
         // Get the FragmentManager.
         FragmentManager fragmentManager = getSupportFragmentManager();
@@ -524,7 +569,7 @@ GroupFragment.OnFragmentInteractionListener, FirebaseFunctionalities.FirebaseInt
         }
     }
 
-    private void openNewGroupFragment (User u){
+    private void openNewGroupFragment(User u) {
         // Instantiate the fragment.
         NewGroupFragment newGroupFragment =
                 com.example.livemap.NewGroupFragment.newInstance(u);
@@ -538,7 +583,7 @@ GroupFragment.OnFragmentInteractionListener, FirebaseFunctionalities.FirebaseInt
                 newGroupFragment).addToBackStack(null).commit();
     }
 
-    public void closeNewGroupFragment () {
+    public void closeNewGroupFragment() {
         // Get the FragmentManager.
         FragmentManager fragmentManager = getSupportFragmentManager();
         // Check to see if the fragment is already showing.
@@ -552,7 +597,7 @@ GroupFragment.OnFragmentInteractionListener, FirebaseFunctionalities.FirebaseInt
         }
     }
 
-    private void openMyGroupsFragment (User u, List<String > usersToAdd){
+    private void openMyGroupsFragment(User u, List<String> usersToAdd) {
         // Instantiate the fragment.
         MyGroupsFragment myGroupsFragment =
                 com.example.livemap.MyGroupsFragment.newInstance(u, usersToAdd);
@@ -566,7 +611,7 @@ GroupFragment.OnFragmentInteractionListener, FirebaseFunctionalities.FirebaseInt
                 myGroupsFragment).addToBackStack(null).commit();
     }
 
-    public void closeMyGroupsFragment () {
+    public void closeMyGroupsFragment() {
         // Get the FragmentManager.
         FragmentManager fragmentManager = getSupportFragmentManager();
         // Check to see if the fragment is already showing.
@@ -579,10 +624,11 @@ GroupFragment.OnFragmentInteractionListener, FirebaseFunctionalities.FirebaseInt
             fragmentTransaction.remove(myGroupsFragment).commit();
         }
     }
-    private void openGroupFragment (Group group){
+
+    private void openGroupFragment(Group group) {
         // Instantiate the fragment.
         GroupFragment groupFragment =
-                com.example.livemap.GroupFragment.newInstance(mUser,group);
+                com.example.livemap.GroupFragment.newInstance(mUser, group);
         // Get the FragmentManager and start a transaction.
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager
@@ -593,7 +639,7 @@ GroupFragment.OnFragmentInteractionListener, FirebaseFunctionalities.FirebaseInt
                 groupFragment).addToBackStack(null).commit();
     }
 
-    public void closeGroupFragment () {
+    public void closeGroupFragment() {
         // Get the FragmentManager.
         FragmentManager fragmentManager = getSupportFragmentManager();
         // Check to see if the fragment is already showing.
