@@ -1,6 +1,7 @@
 # livemap
 
 
+![](/app/src/main/res/drawable-v24/map2.png)
 
 # Abstract 
 The goal of this project is to create a platform for sharing real world map related information,
